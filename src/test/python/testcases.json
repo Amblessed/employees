@@ -1,0 +1,320 @@
+{
+  "GET": [
+    {
+      "story": "Get All Employees",
+      "endpoint": "/",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "type": "Positive Test",
+      "user": "bright"
+    },
+    {
+      "story": "Get Employee By ID",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": "Employee found successfully",
+      "check_field": "employee",
+      "type": "Positive Test",
+      "user": "bright"
+    },
+    {
+      "story": "Get Employee By ID",
+      "endpoint": "RANDOM_NEGATIVE_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 400,
+      "expected_detail": "id must be greater than or equal to 1",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    }
+  ],
+  "POST": [
+    {
+      "story": "Create Employee Positive Test",
+      "endpoint": "/",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 201,
+      "expected_detail": "Employee created successfully",
+      "check_field": "",
+      "type": "Positive Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": {},
+      "payload": {
+        "firstName": "",
+        "lastName": "Johnson",
+        "email": "johnson@example.com"
+      },
+      "expected_status": 400,
+      "expected_detail": "First name must be between 2 and 20 characters",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": {},
+      "payload": {
+        "firstName": "T",
+        "lastName": "Johnson",
+        "email": "johnson@example.com"
+      },
+      "expected_status": 400,
+      "expected_detail": "First name must be between 2 and 20 characters",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": {},
+      "payload": {
+        "firstName": "Johnson",
+        "lastName": "",
+        "email": "johnson@example.com"
+      },
+      "expected_status": 400,
+      "expected_detail": "Last name must be between 2 and 20 characters",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": {},
+      "payload": {
+        "firstName": "Johnson",
+        "lastName": "T",
+        "email": "johnson@example.com"
+      },
+      "expected_status": 400,
+      "expected_detail": "Last name must be between 2 and 20 characters",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": null,
+      "payload": {
+        "firstName": "Johnson",
+        "lastName": "Peterson",
+        "email": "johnson@"
+      },
+      "expected_status": 400,
+      "expected_detail": "Email should be valid",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    },
+    {
+      "story": "Create Employee Negative Test",
+      "endpoint": "/",
+      "params": null,
+      "payload": "EXISTING_EMAIL",
+      "expected_status": 409,
+      "expected_detail": "Email already exists.",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    }
+  ],
+  "PUT": [
+    {
+      "story": "Update Employee Positive Test",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 200,
+      "expected_detail": "Employee updated successfully",
+      "check_field": "updated_employee",
+      "type": "Positive Test",
+      "user": "bright"
+    },
+    {
+      "story": "Update Employee Negative Test",
+      "endpoint": "RANDOM_INVALID_ID",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 404,
+      "expected_detail": "Employee not found with id: RANDOM_INVALID_ID",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "bright"
+    }
+  ],
+  "DELETE":
+  [
+    {
+      "story": "DELETE Employee Positive Test",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": "Employee deleted successfully",
+      "check_field": "",
+      "type": "Positive Test",
+      "user": "bright"
+    },
+    {
+      "story": "Delete Employee Negative Test",
+      "endpoint": "RANDOM_INVALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 404,
+      "expected_detail": "Employee not found with id: RANDOM_INVALID_ID",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "bright"
+    }
+  ],
+  "SECURITY":
+  [
+    {
+      "story": "Access Granted",
+      "endpoint": "/",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "type": "Positive Test",
+      "user": "john",
+      "method": "GET"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": "Employee found successfully",
+      "check_field": "employee",
+      "type": "Positive Test",
+      "user": "john",
+      "method": "GET"
+    },
+    {
+      "story": "Access Denied",
+      "endpoint": "/",
+      "params": {},
+      "payload": {},
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "john",
+      "method": "POST"
+    },
+    {
+      "story": "Access Denied",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "john",
+      "method": "PUT"
+    },
+    {
+      "story": "Access Denied",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "john",
+      "method": "DELETE"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "/",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "GET"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": "Employee found successfully",
+      "check_field": "employee",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "GET"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "/",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 201,
+      "expected_detail": "Employee created successfully",
+      "check_field": "",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "POST"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 200,
+      "expected_detail": "Employee updated successfully",
+      "check_field": "updated_employee",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "PUT"
+    },
+    {
+      "story": "Access Denied",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "mary",
+      "method": "DELETE"
+    },
+    {
+      "story": "Authentication failed",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 401,
+      "expected_detail": "Full authentication is required to access this resource",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "guest",
+      "method": "DELETE"
+    }
+  ]
+}
