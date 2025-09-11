@@ -4,4 +4,4 @@ allure-pytest
 allure-python-commons
 Faker
 psycopg2
-
+pytest-order
