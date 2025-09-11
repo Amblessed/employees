@@ -21,6 +21,21 @@ jobs:
       CI: true
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: employee
+          POSTGRES_PASSWORD: employee
+          POSTGRES_DB: employeeDB
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U employee -d employeeDB"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=30
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,19 +47,35 @@ jobs:
           pip install -r src/test/python/requirements.txt
           pip install allure-pytest requests
 
-      # Verify Postgres
-      - name: Verify Postgres connection
+      # Wait for Postgres
+      - name: Wait for Postgres
         env:
           PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
         run: |
-          pg_isready -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB || true
-          psql -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -c "\q" || true
+          echo "Waiting for Postgres to be ready..."
+          for i in {1..30}; do
+            pg_isready -h 127.0.0.1 -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB
+            if [ $? -eq 0 ]; then
+              echo "Postgres is ready!"
+              break
+            fi
+            echo "Postgres not ready yet... retrying in 2s"
+            sleep 2
+          done
 
-      - name: Load schema
+      # Verify Postgres connection
+      - name: Verify Postgres connection
         env:
           PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
-        run: psql -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -f src/main/resources/db/data.sql
+        run: psql -h 127.0.0.1 -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -c "\q"
 
+      # Load schema and data
+      - name: Load schema and data
+        env:
+          PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
+        run: psql -h 127.0.0.1 -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -f src/main/resources/db/data.sql
+
+      # Set up Java
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
