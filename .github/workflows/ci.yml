@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-test-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     env:
       POSTGRESQL_USERNAME: employee
