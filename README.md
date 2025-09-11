@@ -31,24 +31,24 @@ employees/
 │   │   │   └── com/  
 │   │   │       └── employees/  
 │   │   │           ├── controller/  
-│   │   │           ├── entity/
-|   |   |           ├── exception/
-│   │   │           ├── repository/
-│   │   │           ├── security/
-│   │   │           └── service/
-│   │   └── resources/
-│   │       └── application.properties
-│   └── test/
-│       └── python/
-|           ├── conftest.py
-|           ├── db_connection.py
-|           ├── requirements.txt
-|           ├── test_config.py
-│           └── test_endpoints.py
-|           └── testcases.json
-├── .gitignore
-├── pom.xml
-└── pytest.ini
+│   │   │           ├── entity/  
+|   |   |           ├── exception/  
+│   │   │           ├── repository/  
+│   │   │           ├── security/  
+│   │   │           └── service/  
+│   │   └── resources/  
+│   │       └── application.properties  
+│   └── test/  
+│       └── python/  
+|           ├── conftest.py  
+|           ├── db_connection.py  
+|           ├── requirements.txt  
+|           ├── test_config.py  
+│           └── test_endpoints.py  
+|           └── testcases.json  
+├── .gitignore  
+├── pom.xml  
+└── pytest.ini  
 
 # 🧪 Testing with Pytest
 
