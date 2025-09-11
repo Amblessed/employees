@@ -6,10 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# permissions:
+  #contents: read
+  #pages: write
+  #id-token: write
 
 jobs:
   build-and-test:
@@ -132,7 +132,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.BOOKSAPI_TOKEN }}
+          github_token: ${{ secrets.GH_PAGES_TOKEN }}
           publish_dir: ./allure-report
           force_orphan: true
           keep_files: true
