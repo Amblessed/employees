@@ -26,6 +26,10 @@ target/
 mvnw.cmd
 mvnw
 .mvn/wrapper/*
+/allure-results
+/allure-report
+springboot.log
+/src/test/python/rough.py
 
 ### NetBeans ###
 /nbproject/private/
