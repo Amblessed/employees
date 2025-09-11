@@ -1,5 +1,10 @@
 ## Employees REST API
 
+[![CI](https://github.com/amblessed/employees/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Amblessed/employees/blob/master/.github/workflows/ci.yml)
+
+[![Allure Report](https://img.shields.io/badge/Allure-Report-ED5C5C?logo=allure&logoColor=white)](https://amblessed.github.io/employees/)
+
+
 This Employees REST API project— demostrates how to seamlessly integrate Java and Python to manage employee data. This project showcases how to combine the power of Spring Boot with the flexibility of Pytest, all backed by PostgreSQL.
 
 # 🚀 Project Overview
