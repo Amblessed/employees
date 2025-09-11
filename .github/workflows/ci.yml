@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  build-test-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     env:
       POSTGRESQL_USERNAME: employee
@@ -16,24 +21,10 @@ jobs:
       CI: true
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: employee
-          POSTGRES_PASSWORD: employee
-          POSTGRES_DB: employeeDB
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U employee -d employeeDB"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=30
-
     steps:
       - uses: actions/checkout@v4
 
+      # Install dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -41,6 +32,7 @@ jobs:
           pip install -r src/test/python/requirements.txt
           pip install allure-pytest requests
 
+      # Verify Postgres
       - name: Verify Postgres connection
         env:
           PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
@@ -48,12 +40,12 @@ jobs:
           pg_isready -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB || true
           psql -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -c "\q" || true
 
-      - name: Load schema and data
+      - name: Load schema
         env:
           PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
         run: psql -h localhost -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -f src/main/resources/db/data.sql
 
-      - name: Set up Java 21
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -89,15 +81,27 @@ jobs:
           name: allure-report
           path: allure-report
 
+      - name: Stop Spring Boot
+        if: always()
+        run: kill $(cat spring_pid.txt) || true
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Allure Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
-          keep_files: true
           force_orphan: true
-          
-      - name: Stop Spring Boot
-        if: always()
-        run: kill $(cat spring_pid.txt) || true
+          keep_files: true
