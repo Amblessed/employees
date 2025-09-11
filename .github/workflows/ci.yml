@@ -89,13 +89,8 @@ jobs:
           name: allure-report
           path: allure-report
 
-      - name: Download Allure Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
