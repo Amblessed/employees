@@ -49,7 +49,8 @@ def get_all_ids_from_db():
     with _get_connection() as cursor:
         cursor.execute("SELECT id as ID FROM employee")
         employees = cursor.fetchall()
-    return list(employees)
+
+    return [employee[0] for employee in employees]
 
 if __name__ == "__main__":
-    print(get_all_employee_from_db())
+    print(get_all_ids_from_db())

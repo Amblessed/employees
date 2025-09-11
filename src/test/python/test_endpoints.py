@@ -1,7 +1,7 @@
 
 import pytest
 import allure
-from test_config import load_test_cases, run_request, RequestType
+from utils import load_test_cases, run_request, RequestType
 from db_connection import get_employee_from_db, get_all_employee_from_db
 
 test_cases = load_test_cases("testcases.json")
