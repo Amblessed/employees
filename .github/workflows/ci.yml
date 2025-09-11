@@ -132,7 +132,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.BOOKS_TOKEN }}
+          github_token: ${{ secrets.BOOKSAPI_TOKEN }}
           publish_dir: ./allure-report
           force_orphan: true
           keep_files: true
