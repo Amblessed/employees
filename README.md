@@ -23,7 +23,7 @@ By integrating Java and Python, this project demonstrates a flexible and scalabl
 # 📁 Project Structure
 
 The project is organized as follows:
-
+```
 employees/  
 ├── src/  
 │   ├── main/  
@@ -49,6 +49,7 @@ employees/
 ├── .gitignore  
 ├── pom.xml  
 └── pytest.ini  
+```
 
 # 🧪 Testing with Pytest
 
