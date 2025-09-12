@@ -11,19 +11,46 @@ This Employees REST API project— demostrates how to seamlessly integrate Java 
 
 This application provides a RESTful API for managing employee records, including CRUD operations (Create, Read, Update, Delete). It leverages:
 
-- **Backend**: Spring Boot with Spring Data JPA and Spring Security  
+- **Backend**: Java, Spring Boot with Spring Data JPA and Spring Security  
 - **Database**: PostgreSQL  
-- **Testing**: Pytest for comprehensive endpoint testing
-
-By integrating Java and Python, this project demonstrates a flexible and scalable approach to backend development and testing.
-
-# 🛠️ Tech Stack
-
-- **Backend Framework**: Spring Boot  
-- **Database**: PostgreSQL
-- **Security**: Spring Security
-- **Testing**: Pytest
+- **Testing**: Python, Pytest for comprehensive REST API endpoint testing
+- **Testcase**: JSON format
+- **TestData**: DataFaker for generating realistic test data
+- **CI/CD**: GitHub Actions
+- **Reporting**: Allure Report
 - **Build Tool**: Maven
+- **Deployment**: GitHub Pages
+
+**_By integrating Java and Python, this project demonstrates a flexible and scalable approach to backend development and testing._**
+
+## Features
+
+- **Employee Management**
+    - Add, update, delete, and list employees
+    - Track employee information: name, email, phone, department, position, salary, hire date, skills, and performance reviews
+    - Active/inactive employee status
+
+- **Department & Position Management**
+    - Multiple departments (Engineering, Product, Analytics, HR, Finance, Sales, IT Support, Operations)
+    - Positions and corresponding skills for realistic employee data
+
+- **Automated Data Seeding**
+    - Generates thousands of employees for development/testing environments
+    - Unique emails and phone numbers
+    - Realistic salaries (whole numbers), hire dates, and timestamps
+    - Performance reviews based on department strengths and improvements
+
+- **Database Support**
+    - PostgreSQL for testing
+
+- **Security & Roles**
+    - Role-based access control (Employee, Manager, Admin)
+    - Users table seeded with predefined credentials for development/testing
+
+- **Spring Boot Actuator**
+    - Health check endpoint: `/actuator/health`
+    - Application info endpoint: `/actuator/info`
+
 
 # 📁 Project Structure
 
@@ -34,7 +61,8 @@ employees/
 │   ├── main/  
 │   │   ├── java/  
 │   │   │   └── com/  
-│   │   │       └── employees/  
+│   │   │       └── employees/ 
+|   |   |           ├── config/ 
 │   │   │           ├── controller/  
 │   │   │           ├── entity/  
 |   |   |           ├── exception/  
@@ -72,6 +100,14 @@ Spring Security is configured to secure the API endpoints. Access control is imp
 
 # 📈 Real-World Use Case
 This project serves as a practical example of integrating Java and Python in a single workflow. The backend, built with Spring Boot and PostgreSQL, provides a robust and scalable solution for managing employee data. The use of Pytest for testing demonstrates how Python can complement Java in the development process, offering flexibility and efficiency.
+
+# Future Work
+
+- Batch inserts for performance optimization.
+- Optional Docker setup for local development with PostgreSQL.
+- Swagger/OpenAPI integration for API documentation.
+- Logging with SLF4J instead of System.out.println.
+
 
 # 💡 Conclusion
 The Employees REST API project exemplifies how combining Java and Python can lead to a powerful and flexible development workflow. By leveraging Spring Boot, PostgreSQL, and Pytest, this project provides a comprehensive solution for managing employee data, from backend development to testing.
