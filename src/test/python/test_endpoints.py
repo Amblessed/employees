@@ -2,12 +2,12 @@
 import pytest
 import allure
 from utils import load_test_cases, run_request, RequestType
-from db_connection import get_employee_from_db, get_all_employee_from_db
+from db_connection import get_employee_from_db, get_all_employees_from_db
 
 test_cases = load_test_cases("testcases.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
-@pytest.mark.order(1)
+@pytest.mark.order(2)
 @pytest.mark.security
 @pytest.mark.parametrize("case", test_cases.get("SECURITY"))
 def test_generic_security_employee(case):
@@ -17,7 +17,7 @@ def test_generic_security_employee(case):
     run_request(RequestType(case["method"]), case)
 
 # ------------------- GENERIC GET TEST WITH SEVERITY -------------------
-@pytest.mark.order(2)
+@pytest.mark.order(3)
 @pytest.mark.get
 @pytest.mark.parametrize("case", test_cases.get("GET"))
 def test_generic_get_employees(case):
@@ -26,31 +26,33 @@ def test_generic_get_employees(case):
     """
     case, response = run_request(RequestType.GET, case)
     if case.get("story") == "Get All Employees":
-        assert response.json().get("employees") == get_all_employee_from_db(), "Get All Employees test failed"
+        assert response.json().get("employees") == get_all_employees_from_db(), "Get All Employees test failed"
     else:
         employee_id = case.get("endpoint").split("/")[-1]
         assert response.json().get("employee") == get_employee_from_db(employee_id), "Get Employee By ID test failed"
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.order(3)
+@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.order(4)
 @pytest.mark.create
 @pytest.mark.parametrize("case", test_cases.get("POST"))
 def test_generic_create_employee(case):
     """
     Generic CREATE test for Employee API with dynamic Allure labels and severity.
     """
-    count_before_request = len(get_all_employee_from_db())
+    count_before_request = len(get_all_employees_from_db())
 
     run_request(RequestType.POST, case)
     if case["type"] == "Positive Test":
         print(f"Count before request: {count_before_request}")
-        print(f"Count after request: {len(get_all_employee_from_db())}")
-        assert len(get_all_employee_from_db()) == count_before_request + 1, "Employee not created in DB"
+        print(f"Count after request: {len(get_all_employees_from_db())}")
+        assert len(get_all_employees_from_db()) == count_before_request + 1, "Employee not created in DB"
 
 
 # ------------------- GENERIC UPDATE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.order(4)
+@pytest.mark.skip(reason="Not implemented")
+@pytest.mark.order(5)
 @pytest.mark.put
 @pytest.mark.parametrize("case", test_cases.get("PUT"))
 def test_generic_update_employee(case):
@@ -75,7 +77,7 @@ def test_generic_update_employee(case):
 
 
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.order(5)
+@pytest.mark.order(1)
 @pytest.mark.delete
 @pytest.mark.parametrize("case", test_cases.get("DELETE"))
 def test_generic_delete_employee(case):

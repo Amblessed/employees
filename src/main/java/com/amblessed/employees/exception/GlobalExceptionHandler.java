@@ -101,8 +101,6 @@ public class GlobalExceptionHandler {
     }
 
 
-
-
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException exception) {
         Map<String, Object> map = new HashMap<>();

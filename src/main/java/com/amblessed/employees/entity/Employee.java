@@ -9,15 +9,21 @@ package com.amblessed.employees.entity;
  */
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "employee")
+@Table(name = "employees")
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class Employee {
 
     @Id
@@ -33,4 +39,49 @@ public class Employee {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "phone_number", unique = true, nullable = false)
+    private String phoneNumber;
+
+    @Column(name = "department", nullable = false)
+    private String department;
+
+    @Column(name = "position", nullable = false)
+    private String position;
+
+    @Column(name = "salary")
+    private BigDecimal salary;
+
+    @Column(name = "hire_date")
+    private LocalDate hireDate;
+
+    @Column(name = "performance_review", columnDefinition = "TEXT")
+    private String performanceReview;
+
+    @Column(name = "skills", columnDefinition = "TEXT")
+    private String skills;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "active")
+    private Boolean active = true;
+
+
+
+    /*@PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }*/
 }

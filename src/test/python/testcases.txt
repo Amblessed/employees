@@ -1,0 +1,37 @@
+
+    {
+      "story": "Access Granted",
+      "endpoint": "/",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 201,
+      "expected_detail": "Employee created successfully",
+      "check_field": "",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "POST"
+    },
+    {
+      "story": "Access Granted",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": "RANDOM_EMPLOYEE",
+      "expected_status": 200,
+      "expected_detail": "Employee updated successfully",
+      "check_field": "updated_employee",
+      "type": "Positive Test",
+      "user": "mary",
+      "method": "PUT"
+    },
+    {
+      "story": "Access Denied",
+      "endpoint": "RANDOM_VALID_ID",
+      "params": {},
+      "payload": {},
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "",
+      "type": "Negative Test",
+      "user": "mary",
+      "method": "DELETE"
+    },

@@ -4,6 +4,10 @@ import pytest
 import os, shutil, sys
 import socket
 import platform
+import time
+import requests
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 # --- Configuration ---
 
@@ -19,9 +23,13 @@ SERVER_PORT = 9090
 BASE_URL = f"http://localhost:{SERVER_PORT}/api/employees/"
 STARTUP_WAIT = 90  # seconds
 POLL_INTERVAL = 1  # seconds
+SLEEP_TIME = 15  # seconds
 LOG_FILE = "springboot.log"
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "allure-results")
+MAX_RETRIES = 10  # number of attempts
+WAIT_SECONDS = 3  # seconds between retries
+
 
 def is_port_open(port, host="localhost"):
     """Check if a TCP port is open on a host."""
@@ -80,6 +88,9 @@ def spring_boot_server():
     # Wait until server is up
     print(f"Waiting for Spring Boot to start on port {SERVER_PORT}...")
     wait_for_port(SERVER_PORT, timeout=STARTUP_WAIT)
+    wait_for_server()
+    print(f"Sleeping for {SLEEP_TIME} seconds in order to wait for the database seeding to complete........")
+    time.sleep(SLEEP_TIME)
 
     # Run tests
     yield
@@ -98,9 +109,9 @@ def run_command(cmd, description: str):
     print(description)
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.stdout:
-        print("STDOUT:\n", result.stdout)
+        print("STDOUT: ", result.stdout)
     if result.stderr:
-        print("STDERR:\n", result.stderr)
+        print("STDERR: ", result.stderr)
     return result.returncode
 
 def pytest_sessionstart(session):
@@ -141,3 +152,19 @@ def pytest_sessionfinish(session, exitstatus):
     print("Opening Allure report in browser...")
     subprocess.Popen([allure_cmd, "open", report_dir])
 
+def wait_for_server(url=BASE_URL):
+    session = requests.Session()
+    retries = Retry(total=MAX_RETRIES, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+    session.mount('http://', HTTPAdapter(max_retries=retries))
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            resp = session.get(url.replace("/api/employees/", "/actuator/health"), timeout=5)
+            if resp.status_code == 200:
+                print(f"Server is up! ({attempt + 1}/{MAX_RETRIES})")
+                return True
+        except requests.exceptions.RequestException:
+            pass
+        print(f"Waiting for server... ({attempt + 1}/{MAX_RETRIES})")
+        time.sleep(WAIT_SECONDS)
+    raise RuntimeError("Server did not become ready in time")

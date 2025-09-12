@@ -8,7 +8,7 @@ import random
 from enum import Enum
 from faker import Faker
 from requests.auth import HTTPBasicAuth
-from db_connection import get_employee_from_db
+from db_connection import get_employee_from_db, get_all_employees_from_db, get_all_ids_from_db
 
 BASE_URL = "http://localhost:9090/api/employees"
 TIMEOUT = 20
@@ -36,8 +36,8 @@ def _generate_random_employee() -> Dict[str, str]:
 
 
 def run_request(request_type: RequestType, case: dict) -> tuple[dict, Response] | None:
-    random_valid_id = random.randint(1, 70)
-    random_invalid_id = random.randint(800000000, 900000000)
+    random_valid_id = random.choice(get_all_ids_from_db())
+    random_invalid_id = random.randint(80000, 90000)
     random_negative_id = random.randint(-22, -1)
     replacements = {
         "RANDOM_VALID_ID": f"/{random_valid_id}",
@@ -214,7 +214,8 @@ def make_request(method: str, case: Dict) -> requests.Response | None:
             request_kwargs['headers'] = {'Content-Type': 'application/json'}
 
         response = requests.request(**request_kwargs)
-        _print_response(response)
+        if method.upper() == "DELETE":
+            _print_response(response)
         return response
     except Exception as e:
         print(f"Error making {method} request to {url}: {str(e)}")
