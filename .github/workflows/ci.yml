@@ -73,7 +73,7 @@ jobs:
       - name: Load schema and data
         env:
           PGPASSWORD: ${{ env.POSTGRESQL_PASSWORD }}
-        run: psql -h 127.0.0.1 -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -f src/main/resources/db/data.txt
+        run: psql -h 127.0.0.1 -p 5432 -U $POSTGRESQL_USERNAME -d $POSTGRESQL_DB -f src/main/resources/db/data.sql
 
       # Set up Java
       - name: Set up Java
