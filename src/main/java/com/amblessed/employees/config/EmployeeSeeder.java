@@ -33,7 +33,7 @@ public class EmployeeSeeder implements CommandLineRunner {
 
     private final EmployeeRepository employeeRepository;
 
-    private static final int EMPLOYEE_COUNT = 10000;
+    private static final int EMPLOYEE_COUNT = 5000;
 
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;

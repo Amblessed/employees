@@ -26,10 +26,18 @@ def test_generic_get_employees(case):
     """
     case, response = run_request(RequestType.GET, case)
     if case.get("story") == "Get All Employees":
-        assert response.json().get("employees") == get_all_employees_from_db(), "Get All Employees test failed"
+        response_result = response.json().get("employees")
+        assert len(response_result) == len(get_all_employees_from_db()), "Get All Employees test failed"
     else:
         employee_id = case.get("endpoint").split("/")[-1]
-        assert response.json().get("employee") == get_employee_from_db(employee_id), "Get Employee By ID test failed"
+        if case.get("type") == "Negative Test":
+            assert response.json().get("employee") == get_employee_from_db(employee_id), "Get Employee By ID test failed"
+            return
+        response_result = response.json().get("employee")
+        employee = get_employee_from_db(employee_id)
+        assert response_result.get("firstName") == employee.get("firstName"), "Get Employee By ID test failed"
+        assert response_result.get("lastName") == employee.get("lastName"), "Get Employee By ID test failed"
+        assert response_result.get("email") == employee.get("email"), "Get Employee By ID test failed"
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------

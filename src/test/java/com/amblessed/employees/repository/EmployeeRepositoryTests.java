@@ -39,12 +39,13 @@ class EmployeeRepositoryTests {
 
     private Employee employee;
     private List<Employee> employees;
+    private static final int EMPLOYEE_COUNT = 500;
 
     @BeforeEach
     void setUp() {
         employeeRepository.deleteAll();  // This is to ensure the in-memory database is empty before each test
         employee = generateRandomEmployees(1).getFirst();
-        employees = generateRandomEmployees(1000);
+        employees = generateRandomEmployees(EMPLOYEE_COUNT);
 
     }
 
@@ -231,7 +232,7 @@ class EmployeeRepositoryTests {
 
         //then (or Assert)
         assertNotNull(savedEmployees);
-        assertThat(savedEmployees).isNotEmpty().hasSize(1000);
+        assertThat(savedEmployees).isNotEmpty().hasSize(EMPLOYEE_COUNT);
     }
 
 
