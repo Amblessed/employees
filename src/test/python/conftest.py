@@ -23,7 +23,7 @@ SERVER_PORT = 9090
 BASE_URL = f"http://localhost:{SERVER_PORT}/api/employees/"
 STARTUP_WAIT = 90  # seconds
 POLL_INTERVAL = 1  # seconds
-SLEEP_TIME = 15  # seconds
+SLEEP_TIME = 30  # seconds
 LOG_FILE = "springboot.log"
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "allure-results")
@@ -90,7 +90,7 @@ def spring_boot_server():
     wait_for_port(SERVER_PORT, timeout=STARTUP_WAIT)
     wait_for_server()
     print(f"Sleeping for {SLEEP_TIME} seconds in order to wait for the database seeding to complete........")
-    time.sleep(SLEEP_TIME)
+    time.sleep(SLEEP_TIME) # Wait for the database seeding to complete
 
     # Run tests
     yield

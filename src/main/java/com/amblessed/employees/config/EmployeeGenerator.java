@@ -65,7 +65,7 @@ public class EmployeeGenerator {
 
     // Generate unique phone number
     private static String generateUniquePhoneNumber() {
-        return faker.phoneNumber().cellPhone() + faker.numerify("-####");
+        return faker.phoneNumber().cellPhone() + faker.numerify("-#####");
     }
 
     private static int calculateSalary(String position) {

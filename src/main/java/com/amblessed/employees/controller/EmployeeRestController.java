@@ -8,6 +8,7 @@ package com.amblessed.employees.controller;
  * @Created: 09-Sep-25
  */
 
+import com.amblessed.employees.config.AppConstants;
 import com.amblessed.employees.entity.EmployeeRequest;
 import com.amblessed.employees.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,12 @@ public class EmployeeRestController {
 
     @Operation(summary = "Get all employees", description = "Get all employees from the database")
     @GetMapping("/")
-    public ResponseEntity<Map<String, Object>> findAllEmployees() {
+    public ResponseEntity<Map<String, Object>> findAllEmployees(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_FIRSTNAME, required = false) String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = AppConstants.SORT_DIRECTION, required = false) String sortDirection
+    ) {
         Map<String, Object> body = new HashMap<>();
         body.put("employees", employeeService.findAll());
         return ResponseEntity.status(HttpStatus.OK)

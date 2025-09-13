@@ -14,8 +14,9 @@ import com.amblessed.employees.exception.EmployeeNotFoundException;
 import com.amblessed.employees.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -37,22 +38,56 @@ public class EmployeeServiceImpl implements EmployeeService{
     public EmployeeRequest findById(long employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
-        EmployeeRequest employeeRequest = new EmployeeRequest();
-        employeeRequest.setFirstName(employee.getFirstName());
-        employeeRequest.setLastName(employee.getLastName());
-        employeeRequest.setEmail(employee.getEmail());
-        return employeeRequest;
+        return convertToEmployeeRequest(employee);
     }
 
     @Override
-    @Transactional
+    public EmployeeRequest findByEmail(String email) {
+        return null;
+    }
+
+    @Override
+    public List<EmployeeRequest> findByFirstName(String firstName) {
+        return List.of();
+    }
+
+    @Override
+    public List<EmployeeRequest> findByLastName(String lastName) {
+        return List.of();
+    }
+
+    @Override
+    public List<EmployeeRequest> findByDepartment(String department) {
+        List<Employee> employees = employeeRepository.findEmployeeByDepartment(department);
+        List<EmployeeRequest> employeeRequests = new ArrayList<>();
+        for(Employee employee : employees) {
+            employeeRequests.add(convertToEmployeeRequest(employee));
+        }
+        return employeeRequests;
+    }
+
+    @Override
+    public List<EmployeeRequest> findByPosition(String position) {
+        return List.of();
+    }
+
+    @Override
+    public List<EmployeeRequest> findByHireDate(LocalDate hireDate) {
+        return List.of();
+    }
+
+    @Override
+    public List<EmployeeRequest> findByActive(Boolean active) {
+        return List.of();
+    }
+
+    @Override
     public EmployeeRequest save(EmployeeRequest employeeRequest) {
         Employee employee = convertToEmployee(employeeRequest);
         return convertToEmployeeRequest(employeeRepository.save(employee));
     }
 
     @Override
-    @Transactional
     public EmployeeRequest update(long id, EmployeeRequest employeeRequest) {
         employeeRepository.findById(id);
         Employee employee = convertToEmployee(employeeRequest);
@@ -62,7 +97,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     @Override
-    @Transactional
     public EmployeeRequest deleteById(long employeeId) {
         EmployeeRequest employeeRequest = findById(employeeId);
         employeeRepository.deleteById(employeeId);
@@ -75,6 +109,12 @@ public class EmployeeServiceImpl implements EmployeeService{
         employee.setFirstName(employeeRequest.getFirstName());
         employee.setLastName(employeeRequest.getLastName());
         employee.setEmail(employeeRequest.getEmail());
+        employee.setDepartment(employeeRequest.getDepartment());
+        employee.setPosition(employeeRequest.getPosition());
+        employee.setHireDate(employeeRequest.getHireDate());
+        employee.setPerformanceReview(employeeRequest.getPerformanceReview());
+        employee.setSkills(employeeRequest.getSkills());
+        employee.setActive(employeeRequest.getActive());
         return employee;
     }
 

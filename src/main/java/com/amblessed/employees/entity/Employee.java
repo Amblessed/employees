@@ -49,10 +49,10 @@ public class Employee {
     @Column(name = "position", nullable = false)
     private String position;
 
-    @Column(name = "salary")
+    @Column(name = "salary", nullable = false)
     private BigDecimal salary;
 
-    @Column(name = "hire_date")
+    @Column(name = "hire_date", nullable = false)
     private LocalDate hireDate;
 
     @Column(name = "performance_review", columnDefinition = "TEXT")
@@ -61,12 +61,12 @@ public class Employee {
     @Column(name = "skills", columnDefinition = "TEXT")
     private String skills;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    //@CreationTimestamp
+    //@Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(nullable = false)
+    //@UpdateTimestamp
+    //@Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column(name = "active")
@@ -74,7 +74,7 @@ public class Employee {
 
 
 
-    /*@PrePersist
+    @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -83,5 +83,5 @@ public class Employee {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }*/
+    }
 }
