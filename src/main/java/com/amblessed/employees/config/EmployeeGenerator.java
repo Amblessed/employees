@@ -14,6 +14,8 @@ import net.datafaker.Faker;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Random;
+
 
 import static com.amblessed.employees.config.EmployeeDateGenerator.randomInt;
 
@@ -21,6 +23,8 @@ public class EmployeeGenerator {
 
 
     private static final Faker faker = new Faker();
+    private static final Random random = new Random();
+
 
     private EmployeeGenerator() {
         throw new UnsupportedOperationException("Utility class");
@@ -38,6 +42,7 @@ public class EmployeeGenerator {
         Employee employee = new Employee();
         String firstName = faker.name().firstName();
         String lastName = faker.name().fullName().split(" ")[1];
+
 
         employee.setFirstName(firstName);
         employee.setLastName(lastName);
@@ -64,8 +69,11 @@ public class EmployeeGenerator {
     }
 
     // Generate unique phone number
-    private static String generateUniquePhoneNumber() {
-        return faker.phoneNumber().cellPhone() + faker.numerify("-#####");
+    public static String generateUniquePhoneNumber() {
+        int areaCode = 200 + random.nextInt(800);       // 200-999
+        int centralOfficeCode = 200 + random.nextInt(800); // 200-999
+        int lineNumber = 1000 + random.nextInt(9000);   // 1000-9999
+        return String.format("(%03d) %03d-%04d", areaCode, centralOfficeCode, lineNumber);
     }
 
     private static int calculateSalary(String position) {
@@ -78,5 +86,24 @@ public class EmployeeGenerator {
         salary = salary / 1000;
         return salary * 1000;
     }
+
+    public static boolean isValidPassword(String password) {
+        if (password == null) return false;
+        if (password.length() < 8) return false;
+        if (!password.matches(".*[A-Z].*")) return false;
+        if (!password.matches(".*[a-z].*")) return false;
+        if (!password.matches(".*\\d.*")) return false;
+        return password.matches(".*[!@#$%^&*()].*");
+    }
+
+    public static String generateValidPassword() {
+        String password = faker.internet().password(12,16, true, true, true);
+        while (!isValidPassword(password)) {
+            password = faker.internet().password(12,16, true, true, true);
+        }
+        return password;
+    }
+
+
 
 }

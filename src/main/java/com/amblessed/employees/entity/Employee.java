@@ -10,18 +10,19 @@ package com.amblessed.employees.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "employees")
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class Employee {
@@ -31,22 +32,26 @@ public class Employee {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "first_name", nullable = false)
+    // Read-only mirror of the foreign key column
+    @Column(name = "employee_id", nullable = false, unique = true, insertable = false, updatable = false)
+    private String employeeId;
+
+    @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 75)
     private String email;
 
     @Column(name = "phone_number", unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column(name = "department", nullable = false)
+    @Column(name = "department", nullable = false, length = 50)
     private String department;
 
-    @Column(name = "position", nullable = false)
+    @Column(name = "position", nullable = false, length = 50)
     private String position;
 
     @Column(name = "salary", nullable = false)
@@ -72,6 +77,11 @@ public class Employee {
     @Column(name = "active")
     private Boolean active = true;
 
+    // Link to User (login credentials)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "employee_id", referencedColumnName = "user_id", nullable = false, unique = true)
+    private User user;
+
 
 
     @PrePersist
@@ -84,4 +94,5 @@ public class Employee {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

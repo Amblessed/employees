@@ -1,15 +1,16 @@
 
 import pytest
 import allure
-from utils import load_test_cases, run_request, RequestType
+from utilities import load_test_cases, run_request, RequestType
 from db_connection import get_employee_from_db, get_all_employees_from_db
 
 test_cases = load_test_cases("testcases.json")
+test_cases_security = load_test_cases("testcases_security.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
 @pytest.mark.order(2)
 @pytest.mark.security
-@pytest.mark.parametrize("case", test_cases.get("SECURITY"))
+@pytest.mark.parametrize("case", test_cases_security)
 def test_generic_security_employee(case):
     """
     Generic SECURITY test for Employee API with dynamic Allure labels and severity.
@@ -25,19 +26,29 @@ def test_generic_get_employees(case):
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
     case, response = run_request(RequestType.GET, case)
+    response_json = response.json()
     if case.get("story") == "Get All Employees":
-        response_result = response.json().get("employees")
-        assert len(response_result) == len(get_all_employees_from_db()), "Get All Employees test failed"
-    else:
-        employee_id = case.get("endpoint").split("/")[-1]
-        if case.get("type") == "Negative Test":
-            assert response.json().get("employee") == get_employee_from_db(employee_id), "Get Employee By ID test failed"
-            return
-        response_result = response.json().get("employee")
-        employee = get_employee_from_db(employee_id)
-        assert response_result.get("firstName") == employee.get("firstName"), "Get Employee By ID test failed"
-        assert response_result.get("lastName") == employee.get("lastName"), "Get Employee By ID test failed"
-        assert response_result.get("email") == employee.get("email"), "Get Employee By ID test failed"
+        employees = response_json.get("employees")
+        assert employees is not None, "Response should contain 'employees' key"
+        assert isinstance(employees, list)
+
+        page_size = int(case["params"]["pageSize"]) if case.get("params") else case["pageSize"]
+        assert len(employees) == page_size, "Get All Employees test failed"
+        return
+
+    # Case: Get employee by ID
+    employee_id = case.get("endpoint").split("/")[-1]
+    employee_from_db = get_employee_from_db(employee_id)
+
+    # Negative test
+    if case.get("type") == "Negative Test":
+        assert response_json.get("employee") == employee_from_db, "Get Employee By ID test failed"
+        return
+
+    # Positive test
+    employee_response = response_json.get("employee")
+    for key in ["firstName", "lastName", "email"]:
+        assert employee_response.get(key) == employee_from_db.get(key), f"Get Employee By ID test failed for {key}"
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------

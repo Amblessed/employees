@@ -10,16 +10,26 @@ package com.amblessed.employees.controller;
 
 import com.amblessed.employees.config.AppConstants;
 import com.amblessed.employees.entity.EmployeeRequest;
+import com.amblessed.employees.entity.EmployeeResponse;
 import com.amblessed.employees.service.EmployeeService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,60 +40,121 @@ public class EmployeeRestController {
     private final EmployeeService employeeService;
 
     @Operation(summary = "Get all employees", description = "Get all employees from the database")
-    @GetMapping("/")
+    @GetMapping("")
+    @PreAuthorize("hasAnyRole('MANAGER')")
     public ResponseEntity<Map<String, Object>> findAllEmployees(
-            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE, required = false) Integer pageNumber,
-            @RequestParam(name = "pageSize", defaultValue = AppConstants.SIZE, required = false) Integer pageSize,
-            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_FIRSTNAME, required = false) String sortBy,
-            @RequestParam(name = "sortDirection", defaultValue = AppConstants.SORT_DIRECTION, required = false) String sortDirection
-    ) {
+            @RequestParam(defaultValue = AppConstants.PAGE) Integer pageNumber,
+            @RequestParam(defaultValue = AppConstants.SIZE) Integer pageSize,
+            @RequestParam(defaultValue = AppConstants.SORT_BY_FIRSTNAME) String sortBy,
+            @RequestParam(defaultValue = AppConstants.SORT_DIRECTION) String sortDirection,
+            Authentication authentication
+    )
+    {
+        System.out.println("User: " + authentication.getName() +
+                ", Roles: " + authentication.getAuthorities());
         Map<String, Object> body = new HashMap<>();
-        body.put("employees", employeeService.findAll());
+        Page<EmployeeResponse> employeeResponsePage = employeeService.findAll(pageNumber, pageSize, sortBy, sortDirection);
+        body.put("employees", employeeResponsePage.getContent());
+        body.put("currentPage", employeeResponsePage.getNumber());
+        body.put("totalPages", employeeResponsePage.getTotalPages());
+        body.put("totalElements", employeeResponsePage.getTotalElements());
+        body.put("size", employeeResponsePage.getSize());
+        body.put("numberOfElements", employeeResponsePage.getNumberOfElements());
+        body.put("first", employeeResponsePage.isFirst());
+        body.put("last", employeeResponsePage.isLast());
+        body.put("empty", employeeResponsePage.isEmpty());
         return ResponseEntity.status(HttpStatus.OK)
                 .body(body);
     }
 
-    @Operation(summary = "Get employee by id", description = "Get employee by id from the database")
-    @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> findEmployeeById(@PathVariable @Min(1) long id) {
-
+    // ------------------- GET BY EMPLOYEE ID -------------------
+    @Operation(summary = "Get employee by ID", description = "Employee sees only their record, managers/admins can see any")
+    @GetMapping("/id/{employeeId}")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or @employeeSecurity.isSelfByEmployeeId(#employeeId, authentication)")
+    public ResponseEntity<Map<String, Object>> findByEmployeeId(@PathVariable String employeeId) {
         Map<String, Object> body = new HashMap<>();
-        body.put("employee", employeeService.findById(id));
+        body.put("employee", employeeService.findByEmployeeId(employeeId));
         body.put("detail", "Employee found successfully");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(body);
     }
 
-
-    @Operation(summary = "Create an employee", description = "Create employee in the database")
-    @PostMapping("/")
-    public ResponseEntity<Map<String, Object>> createEmployee(@Valid @RequestBody EmployeeRequest employeeRequest) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("employee", employeeService.save(employeeRequest));
-        body.put("detail", "Employee created successfully");
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(body);
+    @Operation(summary = "Search employees", description = "Managers or Admins can search all record")
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('MANAGER')")
+    public ResponseEntity<List<EmployeeResponse>> searchEmployees(
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) BigDecimal salary
+    ) {
+        return ResponseEntity.ok(employeeService.filterEmployees(department, position, salary));
     }
 
+
+    // ------------------- EXPORT / DOWNLOAD -------------------
+    @Operation(summary = "Export employees", description = "Admins/managers can download filtered employees as JSON")
+    @GetMapping("/download")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    public ResponseEntity<byte[]> exportEmployees(
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) BigDecimal salary
+    ) throws JsonProcessingException {
+
+        List<EmployeeResponse> employees = employeeService.exportEmployees(department, position, salary);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // <-- Handles LocalDate/LocalDateTime
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // ISO format
+        byte[] jsonBytes = mapper.writeValueAsBytes(employees);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employees.json");
+        headers.set(HttpHeaders.CONTENT_TYPE, "application/json");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(jsonBytes);
+    }
+
+
+    // ------------------- UPDATE -------------------
     @Operation(summary = "Update an employee", description = "Update an employee in the database")
-    @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateEmployee(@Valid @RequestBody EmployeeRequest employeeRequest, @PathVariable @Min(1) long id) {
+    @PutMapping("/id/{employeeId}")
+    @PreAuthorize("hasRole('MANAGER') or @employeeSecurity.isSelfByEmployeeId(#employeeId, authentication)")
+    //@PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<Map<String, Object>> updateEmployee(@Valid @RequestBody EmployeeRequest employeeRequest, @PathVariable String employeeId) {
         Map<String, Object> body = new HashMap<>();
-        employeeService.findById(id);
-        body.put("old_employee", employeeService.findById(id));
-        body.put("updated_employee", employeeService.update(id, employeeRequest));
+        EmployeeResponse oldEmployee = employeeService.findByEmployeeId(employeeId);
+        body.put("old_employee", oldEmployee);
+        body.put("updated_employee", employeeService.update(employeeId, employeeRequest));
         body.put("detail", "Employee updated successfully");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(body);
     }
 
-    @Operation(summary = "Delete an employee", description = "Delete an employee in the database")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteEmployee(@PathVariable @Min(1) long id) {
+    @Operation(summary = "Create employee", description = "Only admins can create employees")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> registerUser(@Valid @RequestBody EmployeeRequest employeeRequest) {
+        EmployeeResponse employeeResponse = employeeService.registerEmployee(employeeRequest);
         Map<String, Object> body = new HashMap<>();
-        body.put("deleted_employee", employeeService.deleteById(id));
+        body.put("employee", employeeResponse);
+        body.put("detail", "Employee created successfully");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(body);
+    }
+
+    @Operation(summary = "Delete employee", description = "Only admins can delete employees")
+    @DeleteMapping("/id/{employeeId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> deleteEmployee(@PathVariable String employeeId) {
+        EmployeeResponse deleted = employeeService.deleteByEmployeeId(employeeId);
+        Map<String, Object> body = new HashMap<>();
+        body.put("deleted_employee", deleted);
         body.put("detail", "Employee deleted successfully");
         return ResponseEntity.status(HttpStatus.OK)
                 .body(body);
     }
+
 }

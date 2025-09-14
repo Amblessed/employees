@@ -32,7 +32,7 @@ public class EmployeeRequest {
     @Size(max = 50, message = "Email must not exceed 50 characters")
     private String email;
 
-    @Size(min = 10, max = 10, message = "Phone number must be between 10 characters")
+    @Pattern(regexp="\\(\\d{3}\\) \\d{3}-\\d{4}", message="Phone number must be in format (XXX) XXX-XXXX")
     private String phoneNumber;
 
     @Size(min = 5, message = "Department must be at least 5 Characters long")
@@ -40,6 +40,9 @@ public class EmployeeRequest {
 
     @Size(min = 5, message = "Position must be at least 5 Characters long")
     private String position;
+
+    @Size(min = 8, message = "Password must be at least 8 Characters long")
+    private String password;
 
     @Min(value = 40000, message = "Salary must be at least 50000")
     private BigDecimal salary;
@@ -52,13 +55,5 @@ public class EmployeeRequest {
     private String skills;
     private Boolean active;
 
-    /*@JsonCreator
-    public EmployeeRequest(
-            @JsonProperty("firstName") String firstName,
-            @JsonProperty("lastName") String lastName,
-            @JsonProperty("email") String email) {
-        this.firstName = firstName != null ? firstName.trim() : null;
-        this.lastName = lastName != null ? lastName.trim() : null;
-        this.email = email != null ? email.trim() : null;
-    }*/
+
 }

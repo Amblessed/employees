@@ -4,7 +4,12 @@ package com.amblessed.employees.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -17,7 +22,22 @@ import org.springframework.security.web.SecurityFilterChain;
 import javax.sql.DataSource;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy(
+                "ROLE_ADMIN > ROLE_MANAGER\nROLE_MANAGER > ROLE_EMPLOYEE"
+        );
+    }
+
+    @Bean
+    public MethodSecurityExpressionHandler expressionHandler(RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
+    }
 
     @Bean
     public UserDetailsManager userDetailsManager(DataSource datasource) {
@@ -25,10 +45,15 @@ public class SecurityConfig {
         manager.setUsersByUsernameQuery(
                 "SELECT user_id, password, active FROM system_users WHERE user_id = ?"
         );
+        // Load authorities by joining roles table
         manager.setAuthoritiesByUsernameQuery(
-                "SELECT user_id, role FROM roles WHERE user_id = ?"
+                "SELECT su.user_id, r.user_role " +
+                        "FROM roles r " +
+                        "JOIN system_users su ON su.user_id = r.user_id " +
+                        "WHERE su.user_id = ?"
         );
-        manager.setRolePrefix("");
+
+        //manager.setRolePrefix("");
 
         return manager;
     }
@@ -51,10 +76,20 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/h2-console/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/h2-console/**").permitAll()
                                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/employees/**", "/api/employees/").hasRole("EMPLOYEE")
-                                .requestMatchers(HttpMethod.POST, "/api/employees", "/api/employees/").hasRole("MANAGER")
+                                .requestMatchers("/api/**").authenticated()
+
+                                // Registration endpoint (open for new users)
+                                //.requestMatchers(HttpMethod.POST, "/api/auth/register").hasRole("ADMIN")
+
+                                // Admin-only endpoints
+                                /*.requestMatchers(HttpMethod.POST,"/api/admin/assign-role", "/api/auth/register").hasRole("ADMIN")
+
+                                .requestMatchers(HttpMethod.GET, "/api/employees/id/**").authenticated() // checked by PreAuthorize
+                                .requestMatchers(HttpMethod.GET, "/api/employees/**", "/api/employees").hasAnyRole("MANAGER")
+                                .requestMatchers(HttpMethod.POST,  "/api/employees/").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasRole("MANAGER")
-                                .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/employees/id/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/employees/download").hasAnyRole("MANAGER", "ADMIN")*/
                 )
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -64,7 +99,6 @@ public class SecurityConfig {
                                 .authenticationEntryPoint(customAuthEntryPoint) // for 401
                                 .accessDeniedHandler(customAccessDeniedHandler)   // for 403
                 );
-
         return http.build();
     }
 }

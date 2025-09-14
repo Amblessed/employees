@@ -9,9 +9,9 @@ package com.amblessed.employees.exception;
  */
 
 
-public class EmployeeNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends RuntimeException {
 
-    public EmployeeNotFoundException(String message) {
+    public ResourceNotFoundException(String message) {
         super(message);
     }
 }

@@ -1,0 +1,75 @@
+
+[
+  {
+  "story": "Access Denied",
+  "endpoint": "",
+  "params": {},
+  "payload": {},
+  "expected_status": 403,
+  "expected_detail": "You are not authorized to access this resource.",
+  "check_field": "detail",
+  "type": "Negative Test",
+  "user": "Employee",
+  "method": "GET"
+  },
+  {
+  "story": "Access Denied",
+  "endpoint": "RANDOM_VALID_ID",
+  "params": {},
+  "payload": {},
+  "expected_status": 403,
+  "expected_detail": "You are not authorized to access this resource.",
+  "check_field": "detail",
+  "type": "Negative Test",
+  "user": "EmployeeValid",
+  "method": "GET"
+  },
+  {
+  "story": "Access Granted",
+  "endpoint": "RANDOM_VALID_EMP_ID",
+  "params": {},
+  "payload": {},
+  "expected_status": 200,
+  "expected_detail": "Access Granted",
+  "check_field": "",
+  "type": "Positive Test",
+  "user": "Employee",
+  "method": "GET"
+  },
+  {
+    "story": "Access Denied",
+    "endpoint": "",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "",
+    "type": "Negative Test",
+    "user": "Employee",
+    "method": "POST"
+  },
+  {
+    "story": "Access Denied",
+    "endpoint": "RANDOM_VALID_EMP_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "",
+    "type": "Negative Test",
+    "user": "EmployeeValid",
+    "method": "PUT"
+  },
+  {
+    "story": "Access Denied",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "",
+    "type": "Negative Test",
+    "user": "Employee",
+    "method": "DELETE"
+  }
+]

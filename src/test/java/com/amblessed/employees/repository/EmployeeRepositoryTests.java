@@ -13,17 +13,12 @@ package com.amblessed.employees.repository;
 import com.amblessed.employees.config.DepartmentService;
 import com.amblessed.employees.config.EmployeeGenerator;
 import com.amblessed.employees.entity.Employee;
-
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-
 import java.util.*;
-
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,6 +35,7 @@ class EmployeeRepositoryTests {
     private Employee employee;
     private List<Employee> employees;
     private static final int EMPLOYEE_COUNT = 500;
+
 
     @BeforeEach
     void setUp() {
@@ -73,8 +69,8 @@ class EmployeeRepositoryTests {
         assertThat(savedEmployee.getId()).isPositive();
         assertThat(savedEmployee).isNotNull();
         assertEquals(employee, savedEmployee);
-    }
 
+    }
 
     @Test
     @Order(3)

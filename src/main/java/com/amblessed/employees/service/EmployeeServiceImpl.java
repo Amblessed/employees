@@ -1,128 +1,211 @@
 package com.amblessed.employees.service;
 
 
-
 /*
  * @Project Name: employees
  * @Author: Okechukwu Bright Onwumere
  * @Created: 09-Sep-25
  */
 
-import com.amblessed.employees.entity.Employee;
-import com.amblessed.employees.entity.EmployeeRequest;
-import com.amblessed.employees.exception.EmployeeNotFoundException;
-import com.amblessed.employees.repository.EmployeeRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import com.amblessed.employees.config.EmployeeGenerator;
+import com.amblessed.employees.entity.*;
+import com.amblessed.employees.exception.InvalidPasswordException;
+import com.amblessed.employees.mapper.EmployeeMapper;
+import com.amblessed.employees.config.AppConstants;
+import com.amblessed.employees.exception.ResourceNotFoundException;
+import com.amblessed.employees.repository.EmployeeRepository;
+import com.amblessed.employees.repository.RoleRepository;
+import com.amblessed.employees.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService{
 
     private final EmployeeRepository employeeRepository;
+    private final EmployeeMapper employeeMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
-    public List<EmployeeRequest> findAll() {
-        List<Employee> employees = employeeRepository.findAll();
-        return employees
-                .stream()
-                .map(this::convertToEmployeeRequest)
-                .toList();
+    public Page<EmployeeResponse> findAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection) {
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, getSort(sortBy, sortDirection));
+        Page<Employee> employees = employeeRepository.findAll(pageDetails);
+        return employees.map(this::mapToResponse);
     }
 
     @Override
-    public EmployeeRequest findById(long employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
-        return convertToEmployeeRequest(employee);
-    }
-
-    @Override
-    public EmployeeRequest findByEmail(String email) {
-        return null;
-    }
-
-    @Override
-    public List<EmployeeRequest> findByFirstName(String firstName) {
-        return List.of();
-    }
-
-    @Override
-    public List<EmployeeRequest> findByLastName(String lastName) {
-        return List.of();
-    }
-
-    @Override
-    public List<EmployeeRequest> findByDepartment(String department) {
-        List<Employee> employees = employeeRepository.findEmployeeByDepartment(department);
-        List<EmployeeRequest> employeeRequests = new ArrayList<>();
-        for(Employee employee : employees) {
-            employeeRequests.add(convertToEmployeeRequest(employee));
+    public List<EmployeeResponse> filterEmployees(String department, String position, BigDecimal salary) {
+        Specification<Employee> spec = null;
+        if (department != null) {
+            spec = EmployeeSpecification.hasDepartment(department);
         }
-        return employeeRequests;
+        if (position != null) {
+            spec = (spec == null) ? EmployeeSpecification.hasPosition(position)
+                    : spec.and(EmployeeSpecification.hasPosition(position));
+        }
+        if (salary != null) {
+            spec = (spec == null) ? EmployeeSpecification.hasSalary(salary)
+                    : spec.and(EmployeeSpecification.hasSalary(salary));
+        }
+        Pageable pageDetails = PageRequest.of(0, 20, getSort(AppConstants.SORT_BY_FIRSTNAME, AppConstants.SORT_DIRECTION));
+        Page<Employee> employees = (spec == null) ? employeeRepository.findAll(pageDetails) : employeeRepository.findAll(spec, pageDetails);
+        return employees.stream().map(this::mapToResponse).toList();
     }
 
-    @Override
-    public List<EmployeeRequest> findByPosition(String position) {
-        return List.of();
-    }
-
-    @Override
-    public List<EmployeeRequest> findByHireDate(LocalDate hireDate) {
-        return List.of();
-    }
-
-    @Override
-    public List<EmployeeRequest> findByActive(Boolean active) {
-        return List.of();
-    }
-
-    @Override
-    public EmployeeRequest save(EmployeeRequest employeeRequest) {
-        Employee employee = convertToEmployee(employeeRequest);
-        return convertToEmployeeRequest(employeeRepository.save(employee));
-    }
-
-    @Override
-    public EmployeeRequest update(long id, EmployeeRequest employeeRequest) {
-        employeeRepository.findById(id);
-        Employee employee = convertToEmployee(employeeRequest);
-        employee.setId(id);
-        Employee savedEmployee = employeeRepository.save(employee);
-        return convertToEmployeeRequest(savedEmployee);
-    }
-
-    @Override
-    public EmployeeRequest deleteById(long employeeId) {
-        EmployeeRequest employeeRequest = findById(employeeId);
-        employeeRepository.deleteById(employeeId);
-        return employeeRequest;
-    }
-
-
-    Employee convertToEmployee(EmployeeRequest employeeRequest) {
-        Employee employee = new Employee();
-        employee.setFirstName(employeeRequest.getFirstName());
-        employee.setLastName(employeeRequest.getLastName());
-        employee.setEmail(employeeRequest.getEmail());
-        employee.setDepartment(employeeRequest.getDepartment());
-        employee.setPosition(employeeRequest.getPosition());
-        employee.setHireDate(employeeRequest.getHireDate());
-        employee.setPerformanceReview(employeeRequest.getPerformanceReview());
-        employee.setSkills(employeeRequest.getSkills());
-        employee.setActive(employeeRequest.getActive());
+    // ------------------- DELETE -------------------
+    @Transactional
+    public EmployeeResponse deleteByEmployeeId(String employeeId) {
+        EmployeeResponse employee = findByEmployeeId(employeeId);
+        employeeRepository.deleteByEmployeeId(employeeId);
         return employee;
     }
 
-    EmployeeRequest convertToEmployeeRequest(Employee employee) {
-        EmployeeRequest employeeRequest = new EmployeeRequest();
-        employeeRequest.setFirstName(employee.getFirstName());
-        employeeRequest.setLastName(employee.getLastName());
-        employeeRequest.setEmail(employee.getEmail());
-        return employeeRequest;
+    // ------------------- EXPORT -------------------
+    @Override
+    public List<EmployeeResponse> exportEmployees(String department, String position, BigDecimal salary) {
+        Specification<Employee> spec = null;
+        if (department != null) {
+            spec = EmployeeSpecification.hasDepartment(department);
+        }
+        if (position != null) {
+            spec = (spec == null) ? EmployeeSpecification.hasPosition(position)
+                    : spec.and(EmployeeSpecification.hasPosition(position));
+        }
+        if (salary != null) {
+            spec = (spec == null) ? EmployeeSpecification.hasSalary(salary)
+                    : spec.and(EmployeeSpecification.hasSalary(salary));
+        }
+        List<Employee> employees = (spec == null) ? employeeRepository.findAll() : employeeRepository.findAll(spec);
+        return employees.stream().map(this::mapToResponse).toList();
     }
+
+    @Override
+    public EmployeeResponse findByEmployeeId(String employeeId) {
+        Employee employee = employeeRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employeeId: " + employeeId));
+        return mapToResponse(employee);
+    }
+
+
+    @Override
+    public EmployeeResponse findByEmail(String email) {
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with email: " + email));
+        return mapToResponse(employee);
+    }
+
+    @Override
+    public List<EmployeeResponse> findByFirstName(String firstName) {
+        List<Employee> employees = employeeRepository.findByFirstName(firstName);
+        return employees.stream().map(this::mapToResponse).toList();
+    }
+
+    @Override
+    public List<EmployeeResponse> findByLastName(String lastName) {
+        List<Employee> employees = employeeRepository.findByLastName(lastName);
+        return employees.stream().map(this::mapToResponse).toList();
+    }
+
+    @Override
+    public EmployeeResponse registerEmployee(EmployeeRequest employeeRequest) {
+
+        String password = employeeRequest.getPassword();
+        if (EmployeeGenerator.isValidPassword(password)) {
+            throw new InvalidPasswordException("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character!");
+        }
+
+        Employee employee = convertToEmployee(employeeRequest);
+        employee.setEmployeeId(generateUniqueEmployeeId());
+
+        // Step 2: Create system user using employeeId
+        User user = new User();
+        user.setUserId(employee.getEmployeeId());
+        user.setEmail(employee.getEmail());
+        user.setPassword(passwordEncoder.encode(password));
+        user.setActive(true);
+        userRepository.save(user);
+
+
+        employee.setUser(user);
+        Employee savedEmployee = employeeRepository.save(employee);
+
+
+        // Step 3: Assign default role
+        Role role = new Role();
+        role.setUserRole("ROLE_EMPLOYEE");
+        role.setUser(user);
+        role.setEmail(user.getEmail());
+        roleRepository.save(role);
+
+        return mapToResponse(savedEmployee);
+    }
+
+    @Override
+    public EmployeeResponse update(String id, EmployeeRequest employeeRequest) {
+        employeeRepository.findByEmployeeId(id);
+        Employee employee = convertToEmployee(employeeRequest);
+        Employee savedEmployee = employeeRepository.save(employee);
+        return mapToResponse(savedEmployee);
+    }
+
+    private Employee convertToEmployee(EmployeeRequest employeeRequest) {
+        return employeeMapper.toEmployee(employeeRequest);
+    }
+
+    private Sort getSort(String sortBy, String sortDirection){
+        Sort.Direction direction = sortDirection.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return switch (sortBy) {
+            case "lastName" -> Sort.by(direction, AppConstants.SORT_BY_LASTNAME)
+                    .and(Sort.by(direction, AppConstants.SORT_BY_FIRSTNAME));
+            case "department" -> Sort.by(direction, AppConstants.SORT_BY_DEPARTMENT)
+                    .and(Sort.by(direction, AppConstants.SORT_BY_FIRSTNAME))
+                    .and(Sort.by(direction, AppConstants.SORT_BY_LASTNAME));
+            case null, default -> Sort.by(direction, AppConstants.SORT_BY_FIRSTNAME)
+                    .and(Sort.by(direction, AppConstants.SORT_BY_LASTNAME));
+        };
+    }
+
+
+    public EmployeeResponse mapToResponse(Employee employee) {
+        EmployeeResponse response = new EmployeeResponse();
+        response.setEmployeeId(employee.getEmployeeId());
+        response.setFirstName(employee.getFirstName());
+        response.setLastName(employee.getLastName());
+        response.setEmail(employee.getEmail());
+        response.setPhoneNumber(employee.getPhoneNumber());
+        response.setDepartment(employee.getDepartment());
+        response.setPosition(employee.getPosition());
+        response.setSalary(employee.getSalary());
+        response.setHireDate(employee.getHireDate());
+        response.setPerformanceReview(employee.getPerformanceReview());
+        response.setSkills(employee.getSkills());
+        response.setActive(employee.getActive());
+        return response;
+    }
+
+    /**
+     * Generate a unique employee ID in EMP-XXXX format.
+     */
+    private String generateUniqueEmployeeId() {
+        String employeeId;
+        do {
+            // EMP-XXXX format using first 8 characters of UUID
+            employeeId = "EMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } while (employeeRepository.existsByEmployeeId(employeeId));
+
+        return employeeId;
+    }
+
 }

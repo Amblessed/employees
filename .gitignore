@@ -29,7 +29,7 @@ mvnw
 /allure-results
 /allure-report
 springboot.log
-/src/test/python/rough.py
+/src/test/python/users_details.py
 
 ### NetBeans ###
 /nbproject/private/
@@ -43,3 +43,5 @@ build/
 
 ### VS Code ###
 .vscode/
+.allure/**
+.allure-results

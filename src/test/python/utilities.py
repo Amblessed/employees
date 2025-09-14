@@ -1,17 +1,19 @@
 import json
-from typing import Dict, Optional, Any
 from requests import Response, JSONDecodeError
 import allure
 import requests
 import os
+from typing import Dict, List, Tuple, Optional, Any
 import random
 from enum import Enum
 from faker import Faker
 from requests.auth import HTTPBasicAuth
-from db_connection import get_employee_from_db, get_all_employees_from_db, get_all_ids_from_db
+from db_connection import get_employee_from_db, get_all_emp_ids_from_db
+
 
 BASE_URL = "http://localhost:9090/api/employees"
 TIMEOUT = 20
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 
 
 class RequestType(str, Enum):
@@ -36,13 +38,16 @@ def _generate_random_employee() -> Dict[str, str]:
 
 
 def run_request(request_type: RequestType, case: dict) -> tuple[dict, Response] | None:
-    random_valid_id = random.choice(get_all_ids_from_db())
-    random_invalid_id = random.randint(80000, 90000)
-    random_negative_id = random.randint(-22, -1)
+    random_employees = get_employee_details(case["user"])
+    employee_1 = random_employees[0]
+    employee_2 = random_employees[1]
+
+
+    random_invalid_id = "AAABBBCCC"
     replacements = {
-        "RANDOM_VALID_ID": f"/{random_valid_id}",
-        "RANDOM_INVALID_ID": f"/{random_invalid_id}",
-        "RANDOM_NEGATIVE_ID": f"/{random_negative_id}",
+        "RANDOM_VALID_ID": f"/id/{employee_1['userId']}",
+        "RANDOM_VALID_EMP_ID": f"/id/{employee_1['userId']}",
+        "RANDOM_INVALID_ID": f"/id/{random_invalid_id}"
     }
     endpoint = case.get("endpoint")
     if endpoint in replacements:
@@ -56,14 +61,23 @@ def run_request(request_type: RequestType, case: dict) -> tuple[dict, Response] 
             case["expected_detail"] = (
                 case["expected_detail"]
                 .replace("RANDOM_INVALID_ID", str(random_invalid_id))
-                .replace("RANDOM_VALID_ID", str(random_valid_id))
-                .replace("RANDOM_NEGATIVE_ID", str(random_negative_id))
+                .replace("RANDOM_VALID_ID", str({employee_1['userId']}))
             )
 
         if case["payload"] == "RANDOM_EMPLOYEE":
             case["payload"] = _generate_random_employee()
         if case["payload"] == "EXISTING_EMAIL":
             case["payload"] = get_employee_from_db(random.randint(71, 86))
+
+        if case["user"] == "EmployeeValid":
+            case["user"] = employee_2.get("userId")
+            case["password"] = employee_2.get("password")
+            case["email"] = employee_2.get("email")
+        else:
+            case["user"] = employee_1.get("userId")
+            case["password"] = employee_1.get("password")
+            case["email"] = employee_1.get("email")
+
 
         response = make_request(request_type, case)
         validate_response(response, case)
@@ -201,9 +215,7 @@ def make_request(method: str, case: Dict) -> requests.Response | None:
     url = f"{BASE_URL}{case.get('endpoint')}"
     print(f"\nURL: {url}")
 
-
-    user = case.get("user")
-    auth = HTTPBasicAuth(user, "fun123")
+    auth = HTTPBasicAuth(case.get("user"), case.get("password"))
 
     try:
         request_kwargs = {'method': method, 'url': url, 'params': params or {}, 'timeout': TIMEOUT, 'auth': auth}
@@ -232,6 +244,7 @@ def validate_negative_response_detail(response: requests.Response, case: Dict):
 
 def _validate_status_code(response: requests.Response, status_code: int):
     """Helper to validate status code in response body."""
+    _print_response(response)
     actual_status = response.status_code
     assert actual_status == status_code, (
         f"Unexpected status code => Expected: {status_code}, Actual: {actual_status}"
@@ -262,7 +275,7 @@ def load_test_cases(file_name: str) -> dict:
     :param file_name: Path to the JSON file
     :return: Dictionary with test cases
     """
-    from pathlib import Path
+
 
     file_path = find_absolute_file_path(file_name)[0]
     try:
@@ -276,6 +289,28 @@ def load_test_cases(file_name: str) -> dict:
         print(f"Error decoding JSON: {e}")
         return {}
 
+def load_json_file(file_name: str) -> dict:
+    """
+    Reads a JSON file containing test cases and returns it as a dictionary.
+
+    :param file_name: Path to the JSON file
+    :return: Dictionary with test cases
+    """
+
+    file_path = find_absolute_file_path(file_name, search_path=PROJECT_ROOT)[0]
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        return {}
+
+
 def find_absolute_file_path(filename: str, search_path: str = ".") -> list:
     """
     Search for a file by name and return a list of absolute paths.
@@ -285,3 +320,51 @@ def find_absolute_file_path(filename: str, search_path: str = ".") -> list:
         if filename in files:
             matches.append(os.path.abspath(os.path.join(root, filename)))
     return matches
+
+def categorize_users(data: Dict[str, Dict[str, str]]) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
+    """
+    Categorizes users from a data dictionary into employees, managers, and admins.
+
+    Args:
+        data (Dict[str, Dict[str, str]]): The input dictionary where each key is a userId
+                                          and each value is a dict containing 'role', 'password', 'email'.
+
+    Returns:
+        Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
+            Three lists of dictionaries: (employees, managers, admins)
+    """
+    list_employee: List[Dict[str, str]] = []
+    list_manager: List[Dict[str, str]] = []
+    list_admin: List[Dict[str, str]] = []
+
+    for key, value in data.items():
+        user_dict = {
+            "userId": key,
+            "role": value.get('role'),
+            "password": value.get('password'),
+            "email": value.get('email')
+        }
+
+        role = value.get('role')
+        if role == "ROLE_EMPLOYEE":
+            list_employee.append(user_dict)
+        elif role == "ROLE_MANAGER":
+            list_manager.append(user_dict)
+        else:
+            list_admin.append(user_dict)
+
+    return list_employee, list_manager, list_admin
+
+
+def get_employee_details(user: str):
+    users = load_json_file("user_details.json")
+    employees = categorize_users(users)
+    if user == "Employee" or user == "EmployeeValid":
+        random_employees = employees[0]
+    elif user == "Manager":
+        random_employees = employees[1]
+    else:
+        random_employees = employees[2]
+    return random.sample(random_employees, 2)
+
+#print(get_employee_details("Employees_Valid"))

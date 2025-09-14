@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler({ConstraintViolationException.class, MethodArgumentNotValidException.class,
-            SQLIntegrityConstraintViolationException.class, HandlerMethodValidationException.class})
+            SQLIntegrityConstraintViolationException.class, HandlerMethodValidationException.class, InvalidPasswordException.class})
     public ProblemDetail handleException(Exception exception) {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
@@ -74,8 +74,8 @@ public class GlobalExceptionHandler {
         }
 
 
-    @ExceptionHandler(EmployeeNotFoundException.class)
-    public ProblemDetail handleBookNotFoundException(EmployeeNotFoundException exception) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleBookNotFoundException(ResourceNotFoundException exception) {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
@@ -99,7 +99,6 @@ public class GlobalExceptionHandler {
         }
         return problemDetail;
     }
-
 
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException exception) {

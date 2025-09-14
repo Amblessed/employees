@@ -21,7 +21,7 @@ def _get_connection():
 
 def get_employee_from_db(employee_id):
      with _get_connection() as cursor:
-         cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees WHERE id = %s", (employee_id,))
+         cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees WHERE employee_id = %s", (employee_id,))
          employee = cursor.fetchone()
      return {"firstName": employee[0], "lastName": employee[1], "email": employee[2]} if employee else None
 
@@ -38,7 +38,7 @@ def get_all_employees_from_db():
         employees = cursor.fetchall()
     return [{"firstName": first, "lastName": last, "email": email} for first, last, email in employees]
 
-def get_all_ids_from_db():
+def get_all_emp_ids_from_db():
     """
     Fetch all ids from the database.
 
@@ -47,10 +47,10 @@ def get_all_ids_from_db():
          Returns an empty list if no ids are found.
     """
     with _get_connection() as cursor:
-        cursor.execute("SELECT id as ID FROM employees")
+        cursor.execute("SELECT employee_id as ID FROM employees")
         employees = cursor.fetchall()
 
     return [employee[0] for employee in employees]
 
 if __name__ == "__main__":
-    print(get_all_ids_from_db())
+    print(get_all_emp_ids_from_db())

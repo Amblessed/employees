@@ -11,22 +11,22 @@ package com.amblessed.employees.service;
 
 
 import com.amblessed.employees.entity.EmployeeRequest;
+import com.amblessed.employees.entity.EmployeeResponse;
+import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface EmployeeService {
 
-    List<EmployeeRequest> findAll();
-    EmployeeRequest findById(long id);
-    EmployeeRequest findByEmail(String email);
-    List<EmployeeRequest> findByFirstName(String firstName);
-    List<EmployeeRequest> findByLastName(String lastName);
-    List<EmployeeRequest> findByDepartment(String department);
-    List<EmployeeRequest> findByPosition(String position);
-    List<EmployeeRequest> findByHireDate(LocalDate hireDate);
-    List<EmployeeRequest> findByActive(Boolean active);
-    EmployeeRequest save(EmployeeRequest employeeRequest);
-    EmployeeRequest update(long id, EmployeeRequest employeeRequest);
-    EmployeeRequest deleteById(long id);
+    Page<EmployeeResponse> findAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection);
+    EmployeeResponse findByEmail(String email);
+    List<EmployeeResponse> findByFirstName(String firstName);
+    List<EmployeeResponse> findByLastName(String lastName);
+    EmployeeResponse registerEmployee(EmployeeRequest employeeRequest);
+    EmployeeResponse update(String id, EmployeeRequest employeeRequest);
+    EmployeeResponse deleteByEmployeeId(String employeeId);
+    List<EmployeeResponse> filterEmployees(String department, String position, BigDecimal salary);
+    List<EmployeeResponse> exportEmployees(String department, String position, BigDecimal salary);
+    EmployeeResponse findByEmployeeId(String employeeId);
 }

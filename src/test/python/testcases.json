@@ -9,7 +9,20 @@
       "expected_detail": null,
       "check_field": "employees",
       "type": "Positive Test",
-      "user": "bright"
+      "user": "bright",
+      "pageSize": 50
+    },
+    {
+      "story": "Get All Employees",
+      "endpoint": "/",
+      "params": {"pageNumber": "1", "pageSize": "20", "sortBy": "lastName", "sortDirection": "desc"},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "type": "Positive Test",
+      "user": "bright",
+      "pageSize": 20
     },
     {
       "story": "Get Employee By ID",
@@ -24,11 +37,11 @@
     },
     {
       "story": "Get Employee By ID",
-      "endpoint": "RANDOM_NEGATIVE_ID",
+      "endpoint": "RANDOM_INVALID_ID",
       "params": {},
       "payload": {},
-      "expected_status": 400,
-      "expected_detail": "id must be greater than or equal to 1",
+      "expected_status": 404,
+      "expected_detail": "Employee not found with employeeId: RANDOM_INVALID_ID",
       "check_field": "detail",
       "type": "Negative Test",
       "user": "bright"
@@ -176,7 +189,7 @@
       "params": {},
       "payload": {},
       "expected_status": 404,
-      "expected_detail": "Employee not found with id: RANDOM_INVALID_ID",
+      "expected_detail": "Employee not found with employeeId: RANDOM_INVALID_ID",
       "check_field": "",
       "type": "Negative Test",
       "user": "susan"
@@ -185,24 +198,24 @@
   "SECURITY":
   [
     {
-      "story": "Access Granted",
-      "endpoint": "/",
+      "story": "Access Denied",
+      "endpoint": "",
       "params": {},
       "payload": {},
-      "expected_status": 200,
-      "expected_detail": null,
-      "check_field": "employees",
-      "type": "Positive Test",
-      "user": "john",
+      "expected_status": 403,
+      "expected_detail": "Access Denied",
+      "check_field": "detail",
+      "type": "Negative Test",
+      "user": "Employee",
       "method": "GET"
     },
     {
-      "story": "Access Granted",
+      "story": "Access Denied",
       "endpoint": "RANDOM_VALID_ID",
       "params": {},
       "payload": {},
-      "expected_status": 200,
-      "expected_detail": "Employee found successfully",
+      "expected_status": 401,
+      "expected_detail": "Full authentication is required to access this resource",
       "check_field": "employee",
       "type": "Positive Test",
       "user": "john",
@@ -217,7 +230,7 @@
       "expected_detail": "Access Denied",
       "check_field": "",
       "type": "Negative Test",
-      "user": "john",
+      "user": "Employee",
       "method": "POST"
     },
     {
@@ -229,7 +242,7 @@
       "expected_detail": "Access Denied",
       "check_field": "",
       "type": "Negative Test",
-      "user": "john",
+      "user": "Employee",
       "method": "PUT"
     },
     {
@@ -241,7 +254,7 @@
       "expected_detail": "Access Denied",
       "check_field": "",
       "type": "Negative Test",
-      "user": "john",
+      "user": "Employee",
       "method": "DELETE"
     },
     {
@@ -253,7 +266,7 @@
       "expected_detail": null,
       "check_field": "employees",
       "type": "Positive Test",
-      "user": "mary",
+      "user": "Manager",
       "method": "GET"
     },
     {
