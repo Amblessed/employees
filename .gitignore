@@ -45,3 +45,10 @@ build/
 .vscode/
 .allure/**
 .allure-results
+
+Rough.*
+sample.*
+data.*
+src/test/python/rough.py
+UserDebug**
+user_details.json
