@@ -6,11 +6,12 @@ from db_connection import get_employee_from_db, get_all_employees_from_db
 
 
 test_cases = load_json_file("testcases.json")
+test_cases_get = load_json_file("testcases_get.json")
 test_cases_delete = load_json_file("testcases_delete.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
-@pytest.mark.order(2)
+@pytest.mark.order(1)
 @pytest.mark.security
 @pytest.mark.parametrize("case", test_cases_security)
 def test_generic_security_employee(case):
@@ -20,15 +21,14 @@ def test_generic_security_employee(case):
     run_request(RequestType(case["method"]), case)
 
 # ------------------- GENERIC GET TEST WITH SEVERITY -------------------
-@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.order(3)
 @pytest.mark.get
-@pytest.mark.parametrize("case", test_cases.get("GET"))
+@pytest.mark.parametrize("case", test_cases_get)
 def test_generic_get_employees(case):
     """
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
-    case, response = run_request(RequestType.GET, case)
+    response, case = run_request(RequestType.GET, case)
     response_json = response.json()
     if case.get("story") == "Get All Employees":
         employees = response_json.get("employees")
@@ -99,7 +99,7 @@ def test_generic_update_employee(case):
 
 
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.order(1)
+@pytest.mark.order(2)
 @pytest.mark.delete
 @pytest.mark.parametrize("case", test_cases_delete)
 def test_generic_delete_employee(case):
