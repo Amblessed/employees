@@ -44,7 +44,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 400;
+    private static final int EMPLOYEE_COUNT = 5000;
 
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;
@@ -52,7 +52,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${user.details.path:src/test/resources/user_details.json}")
     private String userDetailsPath;
 
-    private static final int BATCH_SIZE = 50; // batch save size
+    private static final int BATCH_SIZE = 500; // batch save size
 
     @Override
     @Transactional
