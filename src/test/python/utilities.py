@@ -393,7 +393,3 @@ def find_file(filename):
     for f in search_dir.rglob(filename):
         return str(f)  # return the first match
     return None
-
-
-
-print(get_employee_details("EmployeeValid"))
