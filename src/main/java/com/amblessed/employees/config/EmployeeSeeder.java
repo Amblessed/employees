@@ -45,7 +45,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 1000;
+    private static final int EMPLOYEE_COUNT = 400;
 
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;
@@ -155,6 +155,8 @@ public class EmployeeSeeder implements CommandLineRunner {
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(outputFile, emailPasswordMap);
         log.info("User details written to {}", outputFile.getAbsolutePath());
 
+        //System.out.println("Generated emails: " + generatedEmails.size())
+        //System.out.println("Successfully seeded " + EMPLOYEE_COUNT + " employees!")
         log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
         log.info("Generated emails: {}", generatedEmails.size());
     }

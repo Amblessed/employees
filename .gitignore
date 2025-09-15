@@ -28,7 +28,7 @@ mvnw
 .mvn/wrapper/*
 /allure-results
 /allure-report
-springboot.log
+*.log
 
 
 ### NetBeans ###

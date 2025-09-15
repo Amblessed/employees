@@ -90,10 +90,23 @@ jobs:
 
       - name: Start Spring Boot
         run: |
-          mvn spring-boot:run &
+          mvn spring-boot:run -Dapp.seed-employees=true &
           echo $! > spring_pid.txt
           for i in {1..60}; do
             nc -z localhost 9090 && break
+            sleep 2
+          done
+          
+
+      # After starting Spring Boot
+      - name: Wait for Seeder JSON
+        run: |
+          echo "Waiting for user_details.json to be generated..."
+          for i in {1..60}; do
+            if [ -f src/test/resources/user_details.json ]; then
+              echo "Seeder JSON found!"
+              break
+            fi
             sleep 2
           done
 

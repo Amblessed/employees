@@ -7,6 +7,7 @@ from enum import Enum
 from requests.auth import HTTPBasicAuth
 import requests
 import allure
+import time
 
 BASE_URL = "http://localhost:9090/api/employees"
 TIMEOUT = 20
