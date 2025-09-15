@@ -1,21 +1,19 @@
 import json
-from requests import Response, JSONDecodeError
-import allure
-import requests
 import os
-from typing import Dict, List, Tuple, Optional, Any
 import random
-from enum import Enum
-from faker import Faker
 from pathlib import Path
+from typing import Dict, List, Tuple
+from enum import Enum
 from requests.auth import HTTPBasicAuth
-from db_connection import get_employee_from_db, get_all_emp_ids_from_db
-
+import requests
+import allure
 
 BASE_URL = "http://localhost:9090/api/employees"
 TIMEOUT = 20
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 
+# ---------------------------
+# Enums & Helper Functions
+# ---------------------------
 
 class RequestType(str, Enum):
     GET = "GET"
@@ -24,362 +22,16 @@ class RequestType(str, Enum):
     DELETE = "DELETE"
 
 
-def _generate_random_employee() -> Dict[str, str]:
-    fake = Faker()
-    first_name = fake.first_name()
-    last_name = fake.last_name()
-    domains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"]
-    domain = random.choice(domains)
-    email = f"{first_name.lower()}.{last_name.lower()}@{domain}"
-    return {
-        "firstName": first_name,
-        "lastName": last_name,
-        "email": email,
-    }
-
-
-def run_request(request_type: RequestType, case: dict) -> tuple[dict, Response] | None:
-    random_employees = get_employee_details(case["user"])
-    employee_1 = random_employees[0]
-    employee_2 = random_employees[1]
-
-
-    random_invalid_id = "AAABBBCCC"
-    replacements = {
-        "RANDOM_VALID_ID": f"/id/{employee_1['userId']}",
-        "RANDOM_VALID_EMP_ID": f"/id/{employee_1['userId']}",
-        "RANDOM_INVALID_ID": f"/id/{random_invalid_id}"
-    }
-    endpoint = case.get("endpoint")
-    if endpoint in replacements:
-        case["endpoint"] = replacements[endpoint]
-
-    is_security_test = "access" in case.get("story").lower() or "authentication" in case.get("story").lower()
-    feature = "Security Test" if is_security_test else f"{request_type.name.capitalize()} Employee"
-
-    with allure.step(assign_severity(case, feature)):
-        if isinstance(case.get("expected_detail"), str):
-            case["expected_detail"] = (
-                case["expected_detail"]
-                .replace("RANDOM_INVALID_ID", str(random_invalid_id))
-                .replace("RANDOM_VALID_ID", str({employee_1['userId']}))
-            )
-
-        if case["payload"] == "RANDOM_EMPLOYEE":
-            case["payload"] = _generate_random_employee()
-        if case["payload"] == "EXISTING_EMAIL":
-            case["payload"] = get_employee_from_db(random.randint(71, 86))
-
-        if case["user"] == "EmployeeValid":
-            case["user"] = employee_2.get("userId")
-            case["password"] = employee_2.get("password")
-            case["email"] = employee_2.get("email")
-        else:
-            case["user"] = employee_1.get("userId")
-            case["password"] = employee_1.get("password")
-            case["email"] = employee_1.get("email")
-
-
-        response = make_request(request_type, case)
-        validate_response(response, case)
-        attach_response_body(response)
-
-    return case, response
-
-
-def _print_response(response):
-    try:
-        print(json.dumps(response.json(), indent=4, sort_keys=True))
-    except JSONDecodeError:
-        print(response.text)
-
-
-def _are_all_strings(params: Dict) -> bool:
-    """Check if all keys and values in params are strings.
-    Args:
-        params: Dictionary to validate
-    Returns:
-        bool: True if all keys and values are strings, False otherwise
-    """
-    return all(isinstance(k, str) and isinstance(v, str)
-               for k, v in params.items())
-
-
-def _validate_request_params(params: Optional[Dict]):
-    """Validate request parameters.
-
-    Args:
-        params: Query parameters to validate
-
-    Raises:
-        TypeError: If params is not a dict
-        ValueError: If params contains non-string keys/values
-    """
-    if params is None:
-        return
-
-    if not isinstance(params, dict):
-        raise TypeError(f"params must be a dict, got {type(params).__name__}")
-
-    if not _are_all_strings(params):
-        raise ValueError("All keys and values in params must be strings")
-
-
-def validate_response(response: requests.Response, case: Dict[str, Any]):
-
-    _validate_status_code(response, case["expected_status"])
-    is_positive_test: bool = case["type"] == "Positive Test"
-    _validate_positive_response(response, case) if is_positive_test else _validate_negative_response(response, case)
-
-def _validate_positive_response(response: requests.Response, case: Dict[str, Any]):
-    """Validate response data for positive test cases.
-
-    Args:
-        response: response
-        case: Test case dictionary
-    """
-    if not case["check_field"]:
-        return
-
-    response_data = response.json()
-    check_field = case["check_field"]
-    data = response_data.get(check_field)
-    if not data:
-        return
-
-    assert case['expected_detail'] == response_data.get("detail"), f"Detail mismatch: {case['expected_detail']} != {response_data.get('detail')}"
-    assert check_field in response_data, f"Check field {check_field} not found in response"
-    if isinstance(data, list):
-        for employee in data:
-            if case["payload"]:
-                assert employee.get("firstName") == case["payload"]["firstName"], f"First name mismatch: {employee.get('firstName')} != {case["payload"]["firstName"]}"
-                assert employee.get("lastName") == case["payload"]["lastName"], f"Last name mismatch: {employee.get('lastName')} != {case["payload"]["lastName"]}"
-                assert employee.get("email") == case["payload"]["email"], f"Email mismatch: {employee.get('email')} != {case["payload"]["email"]}"
-    else:
-        assert len(data.get("firstName")) > 2, f"First name mismatch: {data.get('firstName')}"
-        assert len(data.get("lastName")) > 2, f"Last name mismatch: {data.get('lastName')}"
-        assert len(data.get("email")) > 2, f"Email mismatch: {data.get('email')}"
-
-def _validate_negative_response(response: Response, case: Dict[str, Any]):
-    """Validate response for negative test cases.
-
-    Args:
-        response: Response object
-        case: Test case dictionary
-    """
-    response_body = response.json()
-    if not response_body:
-        return
-    assert case['expected_detail'] == response_body.get("detail"), f"Detail mismatch for {case}"
-
-
-def assign_severity(case: Dict, feature: str) -> str:
-    """Assign severity level based on test case type."""
-    is_positive_test = case["type"] == "Positive Test"
-    severity = allure.severity_level.NORMAL if is_positive_test else allure.severity_level.CRITICAL
-    badge = "✅" if case["type"] == "Positive Test" else "❌"
-
-    # Dynamic labels for Allure
-    allure.dynamic.feature(feature)
-    allure.dynamic.story(case["story"])
-    allure.dynamic.title(case["story"].replace(" ", "_").lower())
-    allure.dynamic.severity(severity)
-
-    step_title = (
-        f"{badge} {case['type']}: {case['story']} | "
-        f"Endpoint={case['endpoint']} | Params={case['params'] or 'None'} | "
-        f"Expected Status={case['expected_status']}"
-    )
-
-    return step_title
-
-
-def make_request(method: str, case: Dict) -> requests.Response | None:
-    """
-    Makes an HTTP request with proper handling of params and json payloads.
-
-    Args:
-        method: HTTP method (GET, POST, etc.)
-        case: Test case dictionary
-
-    Returns:
-        requests.Response object
-    """
-    params = case.get('params')
-    _validate_request_params(case.get('params'))
-
-    json_data = case.get('payload')
-
-    if json_data is not None and not isinstance(json_data, dict):
-        raise TypeError(f"json_data must be a dict, got {type(json_data).__name__}")
-
-    url = f"{BASE_URL}{case.get('endpoint')}"
-    print(f"\nURL: {url}")
-
-    auth = HTTPBasicAuth(case.get("user"), case.get("password"))
-
-    try:
-        request_kwargs = {'method': method, 'url': url, 'params': params or {}, 'timeout': TIMEOUT, 'auth': auth}
-
-        # Only add json payload for non-GET/DELETE methods
-        if method.upper() not in ('GET', 'DELETE') and json_data is not None:
-            request_kwargs['json'] = json_data
-            request_kwargs['headers'] = {'Content-Type': 'application/json'}
-
-        response = requests.request(**request_kwargs)
-        if method.upper() == "DELETE":
-            _print_response(response)
-        return response
-    except Exception as e:
-        print(f"Error making {method} request to {url}: {str(e)}")
-        raise
-
-
-def validate_negative_response_detail(response: requests.Response, case: Dict):
-    """Helper to validate error details in negative test cases."""
-    if not case:
-        return
-
-    response_data = response.json()
-    assert response_data.get("detail") == case, f"Expected detail: {case}, Actual: {response_data.get('detail')}"
-
-def _validate_status_code(response: requests.Response, status_code: int):
-    """Helper to validate status code in response body."""
-    _print_response(response)
-    actual_status = response.status_code
-    assert actual_status == status_code, (
-        f"Unexpected status code => Expected: {status_code}, Actual: {actual_status}"
-    )
-
-def validate_positive_response_detail(response: requests.Response, case: Dict):
-    #"""Helper to validate error details in negative test cases."""
-    # Validate data for positive responses
-   books_array = response.json().get("books", [])
-   if case:
-        value = "category" if "category" in case else "title"
-        for data in books_array:
-            assert data[value] == case[value], f"Book {value} mismatch for {case}"
-
-
-def attach_response_body(response: requests.Response):
-    allure.attach(
-        response.text,
-        name="Response Body",
-        attachment_type=allure.attachment_type.JSON
-    )
-
-
-def load_test_cases(file_name: str) -> dict:
-    """
-    Reads a JSON file containing test cases and returns it as a dictionary.
-
-    :param file_name: Path to the JSON file
-    :return: Dictionary with test cases
-    """
-
-
-    file_path = find_absolute_file_path(file_name)[0]
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            data = json.load(file)
-        return data
-    except FileNotFoundError:
-        print(f"Error: File not found at {file_path}")
-        return {}
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return {}
-
-def load_json_file(file_path: str) -> dict:
-    """
-    Reads a JSON file containing test cases and returns it as a dictionary.
-
-    :param file_name: Path to the JSON file
-    :return: Dictionary with test cases
-    """
-
-    #file_path = find_absolute_file_path(file_name, search_path=PROJECT_ROOT)[0]
-
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            data = json.load(file)
-        return data
-    except FileNotFoundError:
-        print(f"Error: File not found at {file_path}")
-        return {}
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return {}
-
-
-def find_absolute_file_path(filename: str, search_path: str = ".") -> list:
-    """
-    Search for a file by name and return a list of absolute paths.
-    """
-    matches = []
-    for root, _, files in os.walk(search_path):
-        if filename in files:
-            matches.append(os.path.abspath(os.path.join(root, filename)))
-    return matches
-
-def categorize_users(data: Dict[str, Dict[str, str]]) -> Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
-    """
-    Categorizes users from a data dictionary into employees, managers, and admins.
-
-    Args:
-        data (Dict[str, Dict[str, str]]): The input dictionary where each key is a userId
-                                          and each value is a dict containing 'role', 'password', 'email'.
-
-    Returns:
-        Tuple[List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
-            Three lists of dictionaries: (employees, managers, admins)
-    """
-    list_employee: List[Dict[str, str]] = []
-    list_manager: List[Dict[str, str]] = []
-    list_admin: List[Dict[str, str]] = []
-
-    for key, value in data.items():
-        user_dict = {
-            "userId": key,
-            "role": value.get('role'),
-            "password": value.get('password'),
-            "email": value.get('email')
-        }
-
-        role = value.get('role')
-        if role == "ROLE_EMPLOYEE":
-            list_employee.append(user_dict)
-        elif role == "ROLE_MANAGER":
-            list_manager.append(user_dict)
-        else:
-            list_admin.append(user_dict)
-
-    return list_employee, list_manager, list_admin
-
-
-def get_employee_details(user: str):
-    users = load_json_file(find_file("user_details.json"))
-    employees = categorize_users(users)
-    if user == "Employee" or user == "EmployeeValid":
-        random_employees = employees[0]
-    elif user == "Manager":
-        random_employees = employees[1]
-    else:
-        random_employees = employees[2]
-    return random.sample(random_employees, 2)
-
-def get_search_dir():
-    # 1. Environment variable (useful in CI)
+def get_search_dir() -> Path:
+    """Locate src/test/resources folder (CI-friendly)."""
     env_dir = os.getenv("RESOURCE_DIR")
     if env_dir and Path(env_dir).exists():
         return Path(env_dir)
 
-    # 2. Relative to current working directory
     candidate = Path("src/test/resources").resolve()
     if candidate.exists():
         return candidate
 
-    # 3. Fallback: walk up from script location
     current = Path(__file__).resolve()
     for parent in current.parents:
         candidate = parent / "src" / "test" / "resources"
@@ -388,12 +40,119 @@ def get_search_dir():
 
     raise FileNotFoundError("Could not locate src/test/resources")
 
-def find_file(filename):
+
+def find_file(filename: str) -> str:
+    """Return first match of filename in resources."""
     search_dir = get_search_dir()
-    for f in search_dir.rglob(filename):
-        return str(f)  # return the first match
-    return None
+    for f in search_dir.rglob(Path(filename).name):
+        return str(f)
+    raise FileNotFoundError(f"Could not find {filename} in {search_dir}")
+
+
+def load_json_file(file_name: str) -> dict:
+    """
+    Load JSON file and return dictionary.
+    Prints the path for debug and handles missing/corrupt JSON safely.
+    """
+    file_path = find_file(file_name)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return {}
+
+
+def categorize_users(data: Dict[str, Dict[str, str]]) -> Tuple[List[Dict], List[Dict], List[Dict]]:
+    """Categorize users into employees, managers, admins."""
+    employees, managers, admins = [], [], []
+    for key, val in data.items():
+        user_dict = {
+            "userId": key,
+            "role": val.get("role"),
+            "password": val.get("password"),
+            "email": val.get("email")
+        }
+        role = val.get("role")
+        if role == "ROLE_EMPLOYEE":
+            employees.append(user_dict)
+        elif role == "ROLE_MANAGER":
+            managers.append(user_dict)
+        else:
+            admins.append(user_dict)
+    return employees, managers, admins
+
+
+# ---------------------------
+# Core Functionality
+# ---------------------------
+
+def get_employee_details(user: str) -> List[Dict]:
+    """Return two random employees/managers/admins based on user type."""
+    users_file = find_file("user_details.json")
+    users_data = load_json_file(users_file)
+    employees, managers, admins = categorize_users(users_data)
+
+    if user in ("Employee", "EmployeeValid"):
+        pool = employees
+    elif user == "Manager":
+        pool = managers
+    else:
+        pool = admins
+
+    return random.sample(pool, 2)
+
+
+def run_request(request_type: RequestType, case: dict):
+    """Example: run API request using employee details."""
+    random_employees = get_employee_details(case["user"])
+    employee_1, employee_2 = random_employees
+
+    # Replace placeholders in endpoint/payload
+    replacements = {
+        "RANDOM_VALID_ID": f"/id/{employee_1['userId']}",
+        "RANDOM_VALID_EMP_ID": f"/id/{employee_1['userId']}",
+        "RANDOM_INVALID_ID": "/id/AAABBBCCC"
+    }
+    endpoint = case.get("endpoint")
+    if endpoint in replacements:
+        case["endpoint"] = replacements[endpoint]
+
+    # Add authentication
+    if case["user"] == "EmployeeValid":
+        case["user"] = employee_2.get("userId")
+        case["password"] = employee_2.get("password")
+    else:
+        case["user"] = employee_1.get("userId")
+        case["password"] = employee_1.get("password")
+
+    # Make request
+    url = f"{BASE_URL}{case.get('endpoint')}"
+    auth = HTTPBasicAuth(case.get("user"), case.get("password"))
+    response = requests.request(
+        method=request_type.value,
+        url=url,
+        json=case.get("payload") if request_type not in (RequestType.GET, RequestType.DELETE) else None,
+        params=case.get("params") or {},
+        timeout=TIMEOUT,
+        auth=auth
+    )
+
+    # Attach response for Allure
+    allure.attach(
+        response.text,
+        name="Response Body",
+        attachment_type=allure.attachment_type.JSON
+    )
+    return response
 
 
 
-print(get_employee_details("EmployeeValid"))
+if __name__ == "__main__":
+    test_cases = load_json_file("testcases.json")
+    test_cases_security = load_json_file("testcases_security.json")
+    print(test_cases)
+    print(test_cases_security)

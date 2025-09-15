@@ -42,12 +42,12 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 4000;
+    private static final int EMPLOYEE_COUNT = 1000;
 
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;
 
-    private static final int BATCH_SIZE = 500; // batch save size
+    private static final int BATCH_SIZE = 100; // batch save size
 
     @Override
     @Transactional

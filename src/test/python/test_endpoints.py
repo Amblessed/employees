@@ -1,11 +1,11 @@
 
 import pytest
 import allure
-from utilities import load_test_cases, run_request, RequestType
+from utilities import load_json_file, run_request, RequestType
 from db_connection import get_employee_from_db, get_all_employees_from_db
 
-test_cases = load_test_cases("testcases.json")
-test_cases_security = load_test_cases("testcases_security.json")
+test_cases = load_json_file("testcases.json")
+test_cases_security = load_json_file("testcases_security.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
 @pytest.mark.order(2)
