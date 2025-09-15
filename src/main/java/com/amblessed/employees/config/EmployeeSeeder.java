@@ -44,7 +44,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 5000;
+    private static final int EMPLOYEE_COUNT = 10000;
 
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;
