@@ -56,7 +56,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private static final int BATCH_SIZE = 100; // batch save size
 
     @Override
-    @Transactional
+    //@Transactional
     public void run(String... args)  throws Exception {
 
         if (!seedEmployees){
@@ -71,6 +71,8 @@ public class EmployeeSeeder implements CommandLineRunner {
         userRepository.deleteAllInBatch();
         log.info("Cleared previous data!");
 
+        System.out.println("Seeding " + EMPLOYEE_COUNT + " employees...");
+        System.out.flush();
         log.info("Seeding {} employees...", EMPLOYEE_COUNT);
 
         List<Employee> employeesBatch = new ArrayList<>();
@@ -137,6 +139,8 @@ public class EmployeeSeeder implements CommandLineRunner {
             if (employeesBatch.size() >= BATCH_SIZE) {
                 employeeRepository.saveAll(employeesBatch);
                 employeesBatch.clear();
+                System.out.println("Seeded " + (i + 1) + " employees...");
+                System.out.flush();
                 log.info("Seeded {} employees so far...", i + 1);
             }
         }
@@ -155,8 +159,9 @@ public class EmployeeSeeder implements CommandLineRunner {
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(outputFile, emailPasswordMap);
         log.info("User details written to {}", outputFile.getAbsolutePath());
 
-        //System.out.println("Generated emails: " + generatedEmails.size())
-        //System.out.println("Successfully seeded " + EMPLOYEE_COUNT + " employees!")
+        System.out.println("Seeder JSON written at: " + outputFile.getAbsolutePath());
+        System.out.println("Successfully seeded " + EMPLOYEE_COUNT + " employees!");
+        System.out.flush();
         log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
         log.info("Generated emails: {}", generatedEmails.size());
     }
