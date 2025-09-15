@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple, Optional, Any
 import random
 from enum import Enum
 from faker import Faker
+from pathlib import Path
 from requests.auth import HTTPBasicAuth
 from db_connection import get_employee_from_db, get_all_emp_ids_from_db
 
@@ -289,7 +290,7 @@ def load_test_cases(file_name: str) -> dict:
         print(f"Error decoding JSON: {e}")
         return {}
 
-def load_json_file(file_name: str) -> dict:
+def load_json_file(file_path: str) -> dict:
     """
     Reads a JSON file containing test cases and returns it as a dictionary.
 
@@ -297,7 +298,7 @@ def load_json_file(file_name: str) -> dict:
     :return: Dictionary with test cases
     """
 
-    file_path = find_absolute_file_path(file_name, search_path=PROJECT_ROOT)[0]
+    #file_path = find_absolute_file_path(file_name, search_path=PROJECT_ROOT)[0]
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -357,7 +358,7 @@ def categorize_users(data: Dict[str, Dict[str, str]]) -> Tuple[List[Dict[str, st
 
 
 def get_employee_details(user: str):
-    users = load_json_file("user_details.json")
+    users = load_json_file(find_file("user_details.json"))
     employees = categorize_users(users)
     if user == "Employee" or user == "EmployeeValid":
         random_employees = employees[0]
@@ -367,4 +368,18 @@ def get_employee_details(user: str):
         random_employees = employees[2]
     return random.sample(random_employees, 2)
 
-#print(get_employee_details("Employees_Valid"))
+def find_file(filename):
+    search_dir = get_search_dir()
+    for f in search_dir.rglob(filename):
+        return str(f)   # return the first match as a string
+    return None
+
+def get_search_dir():
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        candidate = parent / "src" / "test" / "resources"
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError("Could not locate src/test/resources")
+
+#print(get_employee_details("EmployeeValid"))
