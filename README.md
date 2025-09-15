@@ -56,61 +56,84 @@ This application provides a RESTful API for managing employee records, including
 
 The project is organized as follows:
 ```
-employees/  
-├── src/  
-│   ├── main/  
-│   │   ├── java/  
-│   │   │   └── com/  
-│   │   │       └── employees/ 
-|   |   |           ├── config/ 
-│   │   │           ├── controller/  
-│   │   │           ├── entity/  
-|   |   |           ├── exception/  
-│   │   │           ├── repository/  
-│   │   │           ├── security/  
-│   │   │           └── service/  
-│   │   └── resources/  
-│   │       └── application.properties  
-│   └── test/  
-│       └── python/  
-|           ├── conftest.py  
-|           ├── db_connection.py  
-|           ├── requirements.txt  
-|           ├── test_config.py  
-│           └── test_endpoints.py  
-|           └── testcases.json  
-├── .gitignore  
-├── pom.xml  
-└── pytest.ini  
+├───src
+│   ├───main
+│   │   ├───java
+│   │   │   └───com
+│   │   │       └───amblessed
+│   │   │           └───employees
+│   │   │               ├───config
+│   │   │               ├───controller
+│   │   │               ├───entity
+│   │   │               ├───exception
+│   │   │               ├───mapper
+│   │   │               ├───repository
+│   │   │               ├───security
+│   │   │               └───service
+│   │   └───resources
+│   │       ├───db
+│   │       ├───static
+│   │       └───templates
+│   └───test
+│       ├───java
+│       │   └───com
+│       │       └───amblessed
+│       │           └───employees
+│       │               └───repository
+│       ├───python
+│       │   └───__pycache__
+│       └───resources
+│           └───testcases
 ```
 
 # 🧪 Testing with Pytest
 
-The project includes comprehensive tests for the REST API endpoints, ensuring functionality and reliability. These tests are located in the test_endpoints.py file and cover:
+Comprehensive tests are included to validate the REST API endpoints and ensure consistent functionality.  
+The test cases are located in the `resources/testcases` folder and cover:
 
-- Creating new employees  
-- Retrieving employee details  
-- Updating employee information  
+- Creating new employees
+- Retrieving employee details
+- Updating employee information
 - Deleting employee records
 
 Pytest's simplicity and powerful features make it an excellent choice for testing in a Java-Python integrated environment.
 
-# 🔐 Security Features
-Spring Security is configured to secure the API endpoints. Access control is implemented to ensure that only authorized users can perform certain operations, such as creating or deleting employee records.
+# 🔐 Security & API Access
+
+The Employees REST API is secured using **Spring Security** with **Basic Authentication**. Access to endpoints is role-based:
+
+- `ADMIN` and `MANAGER` can retrieve all employees.
+- `ADMIN` and `MANAGER` can retrieve any employee by ID.
+- Individual employees can access only their own record.
+
+Access control is implemented using `@PreAuthorize` annotations on the endpoints. Fine-grained control, like allowing employees to see only their own data, is achieved through custom security checks.
+
+---
+
+### Example Requests with Basic Auth (Python)
+
+#### Get All Employees (Admin/Manager Only)
+```python
+import requests
+
+url = "http://localhost:8080/api/employees"
+response = requests.get(url, auth=("manager_username", "password"))
+
+print(response.status_code)
+print(response.json())
+```
+
 
 # 📈 Real-World Use Case
-This project serves as a practical example of integrating Java and Python in a single workflow. The backend, built with Spring Boot and PostgreSQL, provides a robust and scalable solution for managing employee data. The use of Pytest for testing demonstrates how Python can complement Java in the development process, offering flexibility and efficiency.
+This project serves as a practical example of **integrating Java and Python in a single workflow**. The backend, built with Spring Boot and PostgreSQL, provides a robust and scalable solution for managing employee data. The use of Pytest for testing demonstrates how Python can complement Java in the development process, offering flexibility and efficiency.
 
 # Future Work
-
-- Batch inserts for performance optimization.
 - Optional Docker setup for local development with PostgreSQL.
-- Swagger/OpenAPI integration for API documentation.
-- Logging with SLF4J instead of System.out.println.
-
+- Integrate Swagger/OpenAPI for interactive API documentation.
+- Expand API endpoints and strengthen automated testing coverage.
 
 # 💡 Conclusion
-The Employees REST API project exemplifies how combining Java and Python can lead to a powerful and flexible development workflow. By leveraging Spring Boot, PostgreSQL, and Pytest, this project provides a comprehensive solution for managing employee data, from backend development to testing.
+The Employees REST API project demonstrates how Java and Python can be used together to support a reliable development workflow. Using Spring Boot, PostgreSQL, and Pytest, the system provides a complete approach to managing employee data, covering both backend implementation and testing.
 
 # 📄 License
 This project is licensed under the MIT License.
