@@ -30,7 +30,6 @@ CREATE TABLE employees (
          last_name VARCHAR(50) NOT NULL,
          email VARCHAR(75) NOT NULL UNIQUE,
          phone_number VARCHAR(20) NOT NULL UNIQUE,
-         password VARCHAR(68) NOT NULL,
          department VARCHAR(50) NOT NULL,
          position VARCHAR(50) NOT NULL,
          salary NUMERIC(15,2) NOT NULL,
