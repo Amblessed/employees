@@ -368,18 +368,32 @@ def get_employee_details(user: str):
         random_employees = employees[2]
     return random.sample(random_employees, 2)
 
-def find_file(filename):
-    search_dir = get_search_dir()
-    for f in search_dir.rglob(filename):
-        return str(f)   # return the first match as a string
-    return None
-
 def get_search_dir():
+    # 1. Environment variable (useful in CI)
+    env_dir = os.getenv("RESOURCE_DIR")
+    if env_dir and Path(env_dir).exists():
+        return Path(env_dir)
+
+    # 2. Relative to current working directory
+    candidate = Path("src/test/resources").resolve()
+    if candidate.exists():
+        return candidate
+
+    # 3. Fallback: walk up from script location
     current = Path(__file__).resolve()
     for parent in current.parents:
         candidate = parent / "src" / "test" / "resources"
         if candidate.exists():
             return candidate
+
     raise FileNotFoundError("Could not locate src/test/resources")
 
-#print(get_employee_details("EmployeeValid"))
+def find_file(filename):
+    search_dir = get_search_dir()
+    for f in search_dir.rglob(filename):
+        return str(f)  # return the first match
+    return None
+
+
+
+print(get_employee_details("EmployeeValid"))

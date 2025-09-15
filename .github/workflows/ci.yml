@@ -20,6 +20,7 @@ jobs:
       POSTGRESQL_DB: employeeDB
       CI: true
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      RESOURCE_DIR: ${{ github.workspace }}/src/test/resources  # <-- added
 
     services:
       postgres:
@@ -96,7 +97,9 @@ jobs:
           done
 
       - name: Run Pytest with Allure
-        run: pytest src/test/python/test_endpoints.py --alluredir=allure-results -v || true
+        run: |
+         cd $GITHUB_WORKSPACE  # <-- ensures relative paths resolve correctly
+         pytest src/test/python/test_endpoints.py --alluredir=allure-results -v || true
 
       - name: Install Allure CLI
         run: |
