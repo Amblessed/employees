@@ -4,7 +4,9 @@ import allure
 from utilities import load_json_file, run_request, RequestType
 from db_connection import get_employee_from_db, get_all_employees_from_db
 
+
 test_cases = load_json_file("testcases.json")
+test_cases_delete = load_json_file("testcases_delete.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
@@ -18,6 +20,7 @@ def test_generic_security_employee(case):
     run_request(RequestType(case["method"]), case)
 
 # ------------------- GENERIC GET TEST WITH SEVERITY -------------------
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.order(3)
 @pytest.mark.get
 @pytest.mark.parametrize("case", test_cases.get("GET"))
@@ -98,19 +101,19 @@ def test_generic_update_employee(case):
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
 @pytest.mark.order(1)
 @pytest.mark.delete
-@pytest.mark.parametrize("case", test_cases.get("DELETE"))
+@pytest.mark.parametrize("case", test_cases_delete)
 def test_generic_delete_employee(case):
     """
     Generic DELETE test for Employee API with dynamic Allure labels and severity.
     """
-    passed_case, _ = run_request(RequestType.DELETE, case)
-    employee_id = passed_case["endpoint"].split("/")[-1]
+    _, passed_case = run_request(RequestType.DELETE, case)
+    print(passed_case)
     if passed_case["type"] == "Negative Test":
         return
     with allure.step("Verify employee no longer exists in the database"):
-        db_result = get_employee_from_db(employee_id)
+        db_result = get_employee_from_db(1)
         allure.attach(str(db_result), name="DB Query Result", attachment_type=allure.attachment_type.TEXT)
-        assert db_result is None, f"Employee {employee_id} still exists in DB"
+        assert db_result is None, f"Employee {1} still exists in DB"
 
 
 

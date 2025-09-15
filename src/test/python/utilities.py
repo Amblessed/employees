@@ -133,8 +133,9 @@ def run_request(request_type: RequestType, case: dict):
 
     # Make request
     url = f"{BASE_URL}{case.get('endpoint')}"
-    print(f"\nURL: {url}")
-    print(f"\nUser: {case.get('user')}, Password: {case.get('password')}")
+    print("\n=============================================================================================\n")
+    print(case)
+    print(f"URL: {url}")
     print(f"Running {request_type.name} request for {case['user']}")
     auth = HTTPBasicAuth(case.get("user"), case.get("password"))
     response = requests.request(
@@ -146,7 +147,8 @@ def run_request(request_type: RequestType, case: dict):
         auth=auth
     )
 
-    print(f"\nResponse: {response.text}")
+    print(f"Response: {response.text}")
+    print("=============================================================================================\n")
 
     # Attach response for Allure
     allure.attach(
@@ -155,7 +157,7 @@ def run_request(request_type: RequestType, case: dict):
         attachment_type=allure.attachment_type.JSON
     )
     validate_response(response, case)
-    return response
+    return response, case
 
 def _print_response(response):
     try:
@@ -171,7 +173,7 @@ def validate_response(response: requests.Response, case: Dict[str, Any]):
 
 def _validate_status_code(response: requests.Response, status_code: int):
     """Helper to validate status code in response body."""
-    _print_response(response)
+    #_print_response(response)
     actual_status = response.status_code
     assert actual_status == status_code, (
         f"Unexpected status code => Expected: {status_code}, Actual: {actual_status}"
