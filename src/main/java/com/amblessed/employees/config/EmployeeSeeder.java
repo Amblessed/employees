@@ -17,6 +17,8 @@ import com.amblessed.employees.repository.RoleRepository;
 import com.amblessed.employees.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -40,6 +42,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
     private static final int EMPLOYEE_COUNT = 1000;
@@ -47,22 +50,28 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${app.seed-employees:false}")
     private boolean seedEmployees;
 
+    @Value("${user.details.path:src/test/resources/user_details.json}")
+    private String userDetailsPath;
+
     private static final int BATCH_SIZE = 100; // batch save size
 
     @Override
     @Transactional
     public void run(String... args)  throws Exception {
 
-        if (!seedEmployees) return; // skip seeding if property is false
+        if (!seedEmployees){
+            log.info("Employee seeding skipped (app.seed-employees=false)");
+            return; // skip seeding if property is false
+        }
 
         // Clear existing data
-        System.out.println("Clearing existing data...");
+        log.info("Clearing existing data...");
         roleRepository.deleteAllInBatch();
         employeeRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
-        System.out.println("Cleared previous data!");
+        log.info("Cleared previous data!");
 
-        System.out.println("Seeding " + EMPLOYEE_COUNT + " employees...");
+        log.info("Seeding {} employees...", EMPLOYEE_COUNT);
 
         List<Employee> employeesBatch = new ArrayList<>();
 
@@ -78,27 +87,17 @@ public class EmployeeSeeder implements CommandLineRunner {
             String userId = generateUniqueEmployeeId();
 
             // Ensure uniqueness
-            while (generatedEmails.contains(email)) {
-                System.out.println("Duplicate email found: " + email);
+            while (!generatedEmails.add(email)) {
                 email = email.replaceFirst("@", String.format("0%d@", EmployeeDateGenerator.randomInt(1, 9)));
-                System.out.println("New email: " + email);
             }
-            generatedEmails.add(email);
 
-            while (generatedPhoneNumbers.contains(phoneNumber)) {
-                System.out.println("Duplicate phoneNumber found: " + phoneNumber);
+            while (!generatedPhoneNumbers.add(phoneNumber)) {
                 phoneNumber = EmployeeGenerator.generateUniquePhoneNumber();
-                System.out.println("New phoneNumber: " + phoneNumber);
             }
-            generatedPhoneNumbers.add(phoneNumber);
 
-            while (generatedUserIds.contains(userId)) {
-                System.out.println("Duplicate userId found: " + userId);
+            while (!generatedUserIds.add(userId)) {
                 userId = generateUniqueEmployeeId();
-                System.out.println("New userId: " + userId);
             }
-            generatedUserIds.add(userId);
-
 
             employee.setEmail(email);
             employee.setPhoneNumber(phoneNumber);
@@ -138,7 +137,7 @@ public class EmployeeSeeder implements CommandLineRunner {
             if (employeesBatch.size() >= BATCH_SIZE) {
                 employeeRepository.saveAll(employeesBatch);
                 employeesBatch.clear();
-                System.out.println("Seeded " + (i + 1) + " employees...");
+                log.info("Seeded {} employees so far...", i + 1);
             }
         }
 
@@ -148,24 +147,26 @@ public class EmployeeSeeder implements CommandLineRunner {
         }
 
         // ✅ Write passwords to JSON file for pytest
-        new ObjectMapper().writerWithDefaultPrettyPrinter()
-                .writeValue(new File("src/test/resources/user_details.json"), emailPasswordMap);
+        File outputFile = new File(userDetailsPath);
+        File parentDir = outputFile.getParentFile();
+        if (!parentDir.exists() && !parentDir.mkdirs()) {
+            throw new IllegalStateException("Failed to create directory: " + parentDir);
+        }
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(outputFile, emailPasswordMap);
+        log.info("User details written to {}", outputFile.getAbsolutePath());
 
-        System.out.println("Generated emails: " + generatedEmails.size());
-        System.out.println("Successfully seeded " + EMPLOYEE_COUNT + " employees!");
+        log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
+        log.info("Generated emails: {}", generatedEmails.size());
     }
-
 
     private String generateUniqueEmployeeId() {
        return "EMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
     }
 
     private String generateRandomRole() {
         List<String> roles = List.of("ROLE_EMPLOYEE", "ROLE_MANAGER", "ROLE_ADMIN");
         return roles.get(random.nextInt(roles.size()));
     }
-
 
 }
 
