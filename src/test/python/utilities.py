@@ -2,12 +2,12 @@ import json
 import os
 import random
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from enum import Enum
 from requests.auth import HTTPBasicAuth
 import requests
 import allure
-import time
+from requests import Response, JSONDecodeError
 
 BASE_URL = "http://localhost:9090/api/employees"
 TIMEOUT = 20
@@ -109,6 +109,7 @@ def get_employee_details(user: str) -> List[Dict]:
 
 def run_request(request_type: RequestType, case: dict):
     """Example: run API request using employee details."""
+
     random_employees = get_employee_details(case["user"])
     employee_1, employee_2 = random_employees
 
@@ -132,6 +133,9 @@ def run_request(request_type: RequestType, case: dict):
 
     # Make request
     url = f"{BASE_URL}{case.get('endpoint')}"
+    print(f"\nURL: {url}")
+    print(f"\nUser: {case.get('user')}, Password: {case.get('password')}")
+    print(f"Running {request_type.name} request for {case['user']}")
     auth = HTTPBasicAuth(case.get("user"), case.get("password"))
     response = requests.request(
         method=request_type.value,
@@ -142,14 +146,78 @@ def run_request(request_type: RequestType, case: dict):
         auth=auth
     )
 
+    print(f"\nResponse: {response.text}")
+
     # Attach response for Allure
     allure.attach(
         response.text,
         name="Response Body",
         attachment_type=allure.attachment_type.JSON
     )
+    validate_response(response, case)
     return response
 
+def _print_response(response):
+    try:
+        print(json.dumps(response.json(), indent=4, sort_keys=True))
+    except JSONDecodeError:
+        print(response.text)
+
+
+def validate_response(response: requests.Response, case: Dict[str, Any]):
+    _validate_status_code(response, case["expected_status"])
+    is_positive_test: bool = case["type"] == "Positive Test"
+    _validate_positive_response(response, case) if is_positive_test else _validate_negative_response(response, case)
+
+def _validate_status_code(response: requests.Response, status_code: int):
+    """Helper to validate status code in response body."""
+    _print_response(response)
+    actual_status = response.status_code
+    assert actual_status == status_code, (
+        f"Unexpected status code => Expected: {status_code}, Actual: {actual_status}"
+    )
+
+
+def _validate_positive_response(response: requests.Response, case: Dict[str, Any]):
+    """Validate response data for positive test cases.
+
+    Args:
+        response: response
+        case: Test case dictionary
+    """
+    if not case["check_field"]:
+        return
+
+    response_data = response.json()
+    check_field = case["check_field"]
+    data = response_data.get(check_field)
+    if not data:
+        return
+
+    assert case['expected_detail'] == response_data.get("detail"), f"Detail mismatch: {case['expected_detail']} != {response_data.get('detail')}"
+    assert check_field in response_data, f"Check field {check_field} not found in response"
+    if isinstance(data, list):
+        for employee in data:
+            if case["payload"]:
+                assert employee.get("firstName") == case["payload"]["firstName"], f"First name mismatch: {employee.get('firstName')} != {case["payload"]["firstName"]}"
+                assert employee.get("lastName") == case["payload"]["lastName"], f"Last name mismatch: {employee.get('lastName')} != {case["payload"]["lastName"]}"
+                assert employee.get("email") == case["payload"]["email"], f"Email mismatch: {employee.get('email')} != {case["payload"]["email"]}"
+    else:
+        assert len(data.get("firstName")) > 2, f"First name mismatch: {data.get('firstName')}"
+        assert len(data.get("lastName")) > 2, f"Last name mismatch: {data.get('lastName')}"
+        assert len(data.get("email")) > 2, f"Email mismatch: {data.get('email')}"
+
+def _validate_negative_response(response: Response, case: Dict[str, Any]):
+    """Validate response for negative test cases.
+
+    Args:
+        response: Response object
+        case: Test case dictionary
+    """
+    response_body = response.json()
+    if not response_body:
+        return
+    assert case['expected_detail'] == response_body.get("detail"), f"Detail mismatch for {case}"
 
 
 if __name__ == "__main__":

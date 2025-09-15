@@ -56,7 +56,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private static final int BATCH_SIZE = 100; // batch save size
 
     @Override
-    //@Transactional
+    @Transactional
     public void run(String... args)  throws Exception {
 
         if (!seedEmployees){
@@ -89,17 +89,20 @@ public class EmployeeSeeder implements CommandLineRunner {
             String userId = generateUniqueEmployeeId();
 
             // Ensure uniqueness
-            while (!generatedEmails.add(email)) {
+            while (generatedEmails.contains(email)) {
                 email = email.replaceFirst("@", String.format("0%d@", EmployeeDateGenerator.randomInt(1, 9)));
             }
+            generatedEmails.add(email);
 
-            while (!generatedPhoneNumbers.add(phoneNumber)) {
+            while (generatedPhoneNumbers.contains(phoneNumber)) {
                 phoneNumber = EmployeeGenerator.generateUniquePhoneNumber();
             }
+            generatedPhoneNumbers.add(phoneNumber);
 
-            while (!generatedUserIds.add(userId)) {
+            while (generatedUserIds.contains(userId)) {
                 userId = generateUniqueEmployeeId();
             }
+            generatedUserIds.add(userId);
 
             employee.setEmail(email);
             employee.setPhoneNumber(phoneNumber);
@@ -151,15 +154,15 @@ public class EmployeeSeeder implements CommandLineRunner {
         }
 
         // ✅ Write passwords to JSON file for pytest
-        File outputFile = new File(userDetailsPath);
-        File parentDir = outputFile.getParentFile();
-        if (!parentDir.exists() && !parentDir.mkdirs()) {
-            throw new IllegalStateException("Failed to create directory: " + parentDir);
-        }
-        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(outputFile, emailPasswordMap);
-        log.info("User details written to {}", outputFile.getAbsolutePath());
+        //File outputFile = new File(userDetailsPath);
+        //File parentDir = outputFile.getParentFile();
+        //if (!parentDir.exists() && !parentDir.mkdirs()) {
+          //  throw new IllegalStateException("Failed to create directory: " + parentDir);
+        //}
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(userDetailsPath), emailPasswordMap);
+        log.info("User details written to {}", userDetailsPath);
 
-        System.out.println("Seeder JSON written at: " + outputFile.getAbsolutePath());
+        System.out.println("Seeder JSON written at: " + userDetailsPath);
         System.out.println("Successfully seeded " + EMPLOYEE_COUNT + " employees!");
         System.out.flush();
         log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
