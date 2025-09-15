@@ -21,7 +21,7 @@ jobs:
       CI: true
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       RESOURCE_DIR: ${{ github.workspace }}/src/test/resources  # <-- added
-      USER_DETAILS_PATH: ${{ github.workspace }}/src/test/resources/user_details.json
+      USER_DETAILS_PATH: "/home/runner/work/employees/employees/src/test/resources/user_details.json"
 
     services:
       postgres:

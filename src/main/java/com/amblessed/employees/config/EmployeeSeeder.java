@@ -53,7 +53,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${user.details.path:src/test/resources/user_details.json}")
     private String userDetailsPath;
 
-    private static final int BATCH_SIZE = 100; // batch save size
+    private static final int BATCH_SIZE = 50; // batch save size
 
     @Override
     @Transactional
@@ -159,6 +159,8 @@ public class EmployeeSeeder implements CommandLineRunner {
         //if (!parentDir.exists() && !parentDir.mkdirs()) {
           //  throw new IllegalStateException("Failed to create directory: " + parentDir);
         //}
+        System.out.println("Writing user details JSON to: " + new File(userDetailsPath).getAbsolutePath());
+        System.out.flush();
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(userDetailsPath), emailPasswordMap);
         log.info("User details written to {}", userDetailsPath);
 
