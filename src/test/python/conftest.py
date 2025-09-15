@@ -89,7 +89,7 @@ def spring_boot_server():
     print(f"Waiting for Spring Boot to start on port {SERVER_PORT}...")
     wait_for_port(SERVER_PORT, timeout=STARTUP_WAIT)
     wait_for_server()
-    print(f"Sleeping for {SLEEP_TIME} seconds for the database seeding to complete........")
+    print(f"Sleeping for {SLEEP_TIME} seconds for the database seeding to be completed...........")
     time.sleep(SLEEP_TIME) # Wait for the database seeding to complete
 
     # Run tests
