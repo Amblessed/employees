@@ -95,6 +95,7 @@ public class EmployeeSeeder implements CommandLineRunner {
         // store plain-text passwords
 
         for (int i = 0; i < EMPLOYEE_COUNT; i++) {
+            log.info("Starting employee iteration {}", i + 1);
             Employee employee = EmployeeGenerator.createRandomEmployee();
             String email = ensureUniqueEmail(employee.getEmail(), generatedEmails);
             String phoneNumber = ensureUniquePhone(employee.getPhoneNumber(), generatedPhoneNumbers);
