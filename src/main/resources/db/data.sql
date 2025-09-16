@@ -1,4 +1,4 @@
--- Drop tables if they exist
+/*-- Drop tables if they exist
 DROP TABLE IF EXISTS authorities CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
@@ -24,7 +24,6 @@ CREATE TABLE roles (
 
 CREATE TABLE employees (
          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-         employee_id VARCHAR(20) NOT NULL UNIQUE,
          first_name VARCHAR(50) NOT NULL,
          last_name VARCHAR(50) NOT NULL,
          email VARCHAR(75) NOT NULL UNIQUE,
@@ -38,5 +37,6 @@ CREATE TABLE employees (
          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
          active BOOLEAN DEFAULT TRUE,
-         CONSTRAINT fk_employee_user FOREIGN KEY (employee_id) REFERENCES system_users(user_id)
- );
+         user_id VARCHAR(50) NOT NULL,
+         CONSTRAINT fk_employee_user FOREIGN KEY (user_id) REFERENCES system_users(user_id)
+ );*/
