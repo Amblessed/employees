@@ -134,16 +134,16 @@ public class EmployeeSeeder implements CommandLineRunner {
                 }
                 // Progress log every 100 employees or at final record
                 if ((i + 1) % 50 == 0 || i == EMPLOYEE_COUNT - 1) {
-                    int percent = ((i + 1) * 50) / EMPLOYEE_COUNT;
-                    log.info("Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
+                    int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+                    String bar = "=".repeat(percent / 5) + " ".repeat(20 - (percent / 5));
+                    log.info("📊 Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
+                    log.info("Progress [{}] {}%", bar, percent);
                 }
 
             } catch (Exception e) {
                 log.error("❌ Seeder failed at iteration: {}", e.getMessage(), e);
                 //break; // optional: stop loop or continue
             }
-
-
         }
 
         // Save any remaining records
