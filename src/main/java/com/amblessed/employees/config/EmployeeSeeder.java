@@ -46,7 +46,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 500;
+    private static final int EMPLOYEE_COUNT = 750;
     static Set<String> generatedEmails = new HashSet<>();
     static Set<String> generatedPhoneNumbers = new HashSet<>();
     static Set<String> generatedUserIds = new HashSet<>();
@@ -134,8 +134,8 @@ public class EmployeeSeeder implements CommandLineRunner {
             }
 
             // Progress log every 100 employees or at final record
-            if ((i + 1) % 100 == 0 || i == EMPLOYEE_COUNT - 1) {
-                int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+            if ((i + 1) % 50 == 0 || i == EMPLOYEE_COUNT - 1) {
+                int percent = ((i + 1) * 50) / EMPLOYEE_COUNT;
                 log.info("Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
             }
         }
