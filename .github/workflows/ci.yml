@@ -105,10 +105,13 @@ jobs:
           for i in {1..150}; do
             if [ -f src/test/resources/user_details.json ]; then
               echo "Seeder JSON found!"
-              break
+              jq length src/test/resources/user_details.json
+              exit 0
             fi
             sleep 2
           done
+          echo "❌ Timeout: Seeder JSON was not generated within 5 minutes."
+          exit 1
 
       - name: Run Pytest with Allure
         run: |

@@ -58,13 +58,13 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${user.details.path:src/test/resources/user_details.json}")
     private String userDetailsPath;
 
-    private static final int BATCH_SIZE = 100; // batch save size
+    private static final int BATCH_SIZE = 50; // batch save size
 
     @Override
     @Transactional
-    public void run(String... args)  throws Exception {
+    public void run(String... args) throws Exception {
 
-        if (!seedEmployees){
+        if (!seedEmployees) {
             log.info("Employee seeding skipped (app.seed-employees=false)");
             return; // skip seeding if property is false
         }
@@ -94,10 +94,9 @@ public class EmployeeSeeder implements CommandLineRunner {
 
         // store plain-text passwords
 
-        try {
-            for (int i = 0; i < EMPLOYEE_COUNT; i++) {
 
-
+        for (int i = 0; i < EMPLOYEE_COUNT; i++) {
+            try {
                 Employee employee = EmployeeGenerator.createRandomEmployee();
                 String email = ensureUniqueEmail(employee.getEmail(), generatedEmails);
                 String phoneNumber = ensureUniquePhone(employee.getPhoneNumber(), generatedPhoneNumbers);
@@ -105,7 +104,6 @@ public class EmployeeSeeder implements CommandLineRunner {
 
                 employee.setEmail(email);
                 employee.setPhoneNumber(phoneNumber);
-
 
                 // Generate User
                 String plainPassword = EmployeeGenerator.generateValidPassword();
@@ -139,23 +137,25 @@ public class EmployeeSeeder implements CommandLineRunner {
                     int percent = ((i + 1) * 50) / EMPLOYEE_COUNT;
                     log.info("Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
                 }
+
+            } catch (Exception e) {
+                log.error("❌ Seeder failed at iteration: {}", e.getMessage(), e);
+                //break; // optional: stop loop or continue
             }
 
-            // Save any remaining records
-            if (!usersBatch.isEmpty()) {
-                userRepository.saveAll(usersBatch);
-            }
 
-            // ✅ Write passwords to JSON file for pytest
-            log.info("Writing user details to {}", userDetailsPath);
-            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(userDetailsPath), emailPasswordMap);
-            log.info("User details written to {}", userDetailsPath);
-            log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
         }
-        catch (Exception e) {
-            log.error("❌ Seeder failed at iteration: {}", e.getMessage(), e);
-            //break; // optional: stop loop or continue
+
+        // Save any remaining records
+        if (!usersBatch.isEmpty()) {
+            userRepository.saveAll(usersBatch);
         }
+
+        // ✅ Write passwords to JSON file for pytest
+        log.info("Writing user details to {}", userDetailsPath);
+        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(userDetailsPath), emailPasswordMap);
+        log.info("User details written to {}", userDetailsPath);
+        log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
 
     }
 
