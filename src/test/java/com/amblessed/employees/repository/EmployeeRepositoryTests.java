@@ -13,6 +13,8 @@ package com.amblessed.employees.repository;
 import com.amblessed.employees.config.DepartmentService;
 import com.amblessed.employees.config.EmployeeGenerator;
 import com.amblessed.employees.entity.Employee;
+import com.amblessed.employees.entity.Role;
+import com.amblessed.employees.entity.User;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
@@ -31,6 +33,10 @@ class EmployeeRepositoryTests {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
 
     private Employee employee;
     private List<Employee> employees;
@@ -40,8 +46,12 @@ class EmployeeRepositoryTests {
     @BeforeEach
     void setUp() {
         employeeRepository.deleteAll();  // This is to ensure the in-memory database is empty before each test
-        employee = generateRandomEmployees(1).getFirst();
-        employees = generateRandomEmployees(EMPLOYEE_COUNT);
+        roleRepository.deleteAll();
+        userRepository.deleteAll();
+        User user = createUser(); // assumes user is already saved or will be saved separately
+        userRepository.save(user);
+        employee = EmployeeGenerator.createRandomEmployee();
+        employee.setUser(user);
 
     }
 
@@ -61,14 +71,14 @@ class EmployeeRepositoryTests {
         //given (or Arrange) - precondition or setup
         /* employee object already created in the set-up method*/
 
-        //when (or Act) - action or behavior that we are going to test
+
+        // Act
         Employee savedEmployee = employeeRepository.save(employee);
 
-        //then (or Assert) - the expected result
+        // Assert
+        assertNotNull(savedEmployee);
         assertTrue(savedEmployee.getId() > 0);
-        assertThat(savedEmployee.getId()).isPositive();
-        assertThat(savedEmployee).isNotNull();
-        assertEquals(employee, savedEmployee);
+        assertEquals("EMP-00567", savedEmployee.getUser().getUserId());
 
     }
 
@@ -76,16 +86,15 @@ class EmployeeRepositoryTests {
     @Order(3)
     @DisplayName("Find employee by email returns the correct employee")
     void givenEmployeeEmail_whenFindByEmail_thenReturnEmployee() {
-        // arrange
-        employeeRepository.save(employee);
 
-        // act
-        Optional<Employee> foundEmployee = employeeRepository.findByEmail(employee.getEmail());
+        // Act
+        Employee savedEmployee = employeeRepository.save(employee);
+        Optional<Employee> foundEmployee = employeeRepository.findByEmail(savedEmployee.getEmail());
 
         // assert
         assertThat(foundEmployee).isPresent();
-        assertThat(foundEmployee.get().getEmail()).isEqualTo(employee.getEmail());
-        assertThat(foundEmployee.get().getFirstName()).isEqualTo(employee.getFirstName());
+        assertThat(foundEmployee.get().getEmail()).isEqualTo(savedEmployee.getEmail());
+        assertThat(foundEmployee.get().getFirstName()).isEqualTo(savedEmployee.getFirstName());
     }
 
     @Test
@@ -232,12 +241,39 @@ class EmployeeRepositoryTests {
     }
 
 
-    private static List<Employee> generateRandomEmployees(int count) {
-        List<Employee> employees = new ArrayList<>();
+    private List<Employee> generateRandomEmployees(int count) {
+       List<Employee> emps = new ArrayList<>();
        for (int i = 0; i < count; i++) {
-           employees.add(EmployeeGenerator.createRandomEmployee());
+           User user = new User();
+           user.setUserId("EMP-00" + i);
+           user.setPassword("password");
+           user.setEmail("email@domain.com");
+           user.setActive(true);
+           Role role = new Role();
+           role.setUserRole("ROLE_ADMIN");
+           role.setUser(user);
+           user.setRole(role);
+           userRepository.save(user);
+           Employee emp = new Employee();
+           emp.setUser(user);
+           emps.add(emp);
        }
-       return employees;
+       return emps;
+    }
+
+    private User createUser() {
+        User user = new User();
+        user.setUserId("EMP-00567");
+        user.setPassword("password");
+        user.setEmail("email@domain.com");
+        user.setActive(true);
+
+        Role role = new Role();
+        role.setUserRole("ROLE_ADMIN");
+        role.setUser(user);
+        user.setRole(role);
+
+        return user;
     }
 
 }

@@ -27,7 +27,9 @@ mvnw.cmd
 mvnw
 .mvn/wrapper/*
 /allure-results
-/allure-report
+src/allure-results/
+src/allure-report/
+allure-report/
 *.log
 
 

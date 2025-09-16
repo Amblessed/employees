@@ -21,7 +21,7 @@ def _get_connection():
 
 def get_employee_from_db(employee_id):
      with _get_connection() as cursor:
-         cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees WHERE employee_id = %s", (employee_id,))
+         cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees WHERE user_id = %s", (employee_id,))
          employee = cursor.fetchone()
      return {"firstName": employee[0], "lastName": employee[1], "email": employee[2]} if employee else None
 

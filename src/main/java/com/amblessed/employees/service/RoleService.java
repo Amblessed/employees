@@ -26,7 +26,6 @@ public class RoleService {
     private final UserRepository userRepository;
 
 
-
     @Transactional
     public void assignRole(String userId, String roleName) {
         // Check if user exists
@@ -42,7 +41,6 @@ public class RoleService {
         // Save new role
         Role role = new Role();
         role.setUser(user);
-        role.setEmail(user.getEmail());
         role.setUserRole(roleName);
         roleRepository.save(role);
     }

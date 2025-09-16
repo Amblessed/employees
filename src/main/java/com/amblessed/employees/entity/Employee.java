@@ -28,10 +28,6 @@ public class Employee {
     @Column(name = "id")
     private Long id;
 
-    // Read-only mirror of the foreign key column
-    @Column(name = "employee_id", nullable = false, unique = true, insertable = false, updatable = false)
-    private String employeeId;
-
     @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
@@ -74,8 +70,8 @@ public class Employee {
     private Boolean active = true;
 
     // Link to User (login credentials)
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "employee_id", referencedColumnName = "user_id", nullable = false, unique = true)
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
 

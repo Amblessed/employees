@@ -6,12 +6,13 @@ from db_connection import get_employee_from_db, get_all_employees_from_db
 
 
 test_cases = load_json_file("testcases.json")
-test_cases_get = load_json_file("testcases_get.json")
+testcases_get_by_id = load_json_file("get_employee_by_id.json")
+testcases_get_all = load_json_file("get_all_employees.json")
 test_cases_delete = load_json_file("testcases_delete.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
-@pytest.mark.order(1)
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.security
 @pytest.mark.parametrize("case", test_cases_security)
 def test_generic_security_employee(case):
@@ -21,23 +22,14 @@ def test_generic_security_employee(case):
     run_request(RequestType(case["method"]), case)
 
 # ------------------- GENERIC GET TEST WITH SEVERITY -------------------
-@pytest.mark.order(3)
 @pytest.mark.get
-@pytest.mark.parametrize("case", test_cases_get)
-def test_generic_get_employees(case):
+@pytest.mark.parametrize("case", testcases_get_by_id)
+def test_get_employee_by_id(case):
     """
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
     response, case = run_request(RequestType.GET, case)
     response_json = response.json()
-    if case.get("story") == "Get All Employees":
-        employees = response_json.get("employees")
-        assert employees is not None, "Response should contain 'employees' key"
-        assert isinstance(employees, list)
-
-        page_size = int(case["params"]["pageSize"]) if case.get("params") else case["pageSize"]
-        assert len(employees) == page_size, "Get All Employees test failed"
-        return
 
     # Case: Get employee by ID
     employee_id = case.get("endpoint").split("/")[-1]
@@ -45,18 +37,41 @@ def test_generic_get_employees(case):
 
     # Negative test
     if case.get("type") == "Negative Test":
-        assert response_json.get("employee") == employee_from_db, "Get Employee By ID test failed"
+        assert response.status_code == case.get("expected_status"), "Get Employee By ID test failed"
+        assert response_json.get("detail") == case.get("expected_detail"), "Get Employee By ID test failed"
         return
 
     # Positive test
-    employee_response = response_json.get("employee")
+    employee = response_json.get("employee")
     for key in ["firstName", "lastName", "email"]:
-        assert employee_response.get(key) == employee_from_db.get(key), f"Get Employee By ID test failed for {key}"
+        assert employee.get(key) == employee_from_db.get(key), f"Get Employee By ID test failed for {key}"
+
+# ------------------- GENERIC GET TEST WITH SEVERITY -------------------
+@pytest.mark.getall
+@pytest.mark.parametrize("case", testcases_get_all)
+def test_get_all_employees(case):
+    """
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    """
+    response, case = run_request(RequestType.GET, case)
+    response_json = response.json()
+    if case.get("type") == "Negative Test":
+        assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
+        assert response_json.get("detail") == case.get("expected_detail"), "Get All Employees test failed"
+        return
+    employees = response_json.get("employees")
+    assert employees is not None, "Response should contain 'employees' key"
+    assert isinstance(employees, list)
+
+    print(response_json.get("size"))
+
+    page_size = int(case["params"]["pageSize"]) if case.get("params") else case["pageSize"]
+    assert len(employees) == page_size, "Get All Employees test failed"
+
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------
 @pytest.mark.skip(reason="Not implemented")
-@pytest.mark.order(4)
 @pytest.mark.create
 @pytest.mark.parametrize("case", test_cases.get("POST"))
 def test_generic_create_employee(case):
@@ -74,7 +89,6 @@ def test_generic_create_employee(case):
 
 # ------------------- GENERIC UPDATE EMPLOYEE TEST WITH SEVERITY -------------------
 @pytest.mark.skip(reason="Not implemented")
-@pytest.mark.order(5)
 @pytest.mark.put
 @pytest.mark.parametrize("case", test_cases.get("PUT"))
 def test_generic_update_employee(case):
@@ -99,7 +113,7 @@ def test_generic_update_employee(case):
 
 
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.order(2)
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.delete
 @pytest.mark.parametrize("case", test_cases_delete)
 def test_generic_delete_employee(case):

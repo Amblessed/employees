@@ -37,7 +37,15 @@ public class CustomAuthEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("User: " + auth.getName() + ", Roles: " + auth.getAuthorities());
+        String ip = request.getRemoteAddr();
+        String path = request.getRequestURI();
+        System.out.println("Unauthorized access to " + path + " from IP: " + ip);
+        if (auth != null) {
+            System.out.println("User: " + auth.getName() + ", Roles: " + auth.getAuthorities());
+        } else {
+            System.out.println("Authentication is null. Request URI: " + request.getRequestURI());
+        }
+
         ProblemDetail detail = exceptionHandler.createProblemDetail(authException, HttpStatus.UNAUTHORIZED);
         exceptionHandler.writeProblemDetail(response, detail);
     }

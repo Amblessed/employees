@@ -17,7 +17,6 @@ CREATE TABLE system_users (
 CREATE TABLE roles (
        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
        user_id VARCHAR(20) NOT NULL REFERENCES system_users (user_id),
-       email VARCHAR(75) NOT NULL,
        user_role VARCHAR(50) NOT NULL,
        UNIQUE (user_id, user_role)
 );

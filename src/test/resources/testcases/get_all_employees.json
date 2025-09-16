@@ -1,0 +1,38 @@
+[
+    {
+      "story": "Manager accesses all employees",
+      "endpoint": "",
+      "params": {"pageNumber": 1, "pageSize": 20},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "user_role": "Manager",
+      "access_target": "all",
+      "type": "Positive Test"
+    },
+    {
+    "story": "Manager accesses all employees",
+    "endpoint": "",
+    "params": {"pageNumber": 1, "pageSize": 20},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Admin",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Employee tries to list all employees",
+    "endpoint": "",
+    "params": {"pageNumber": 1, "pageSize": 20},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "user_role": "Employee",
+    "access_target": "all",
+    "type": "Negative Test"
+  }
+]

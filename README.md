@@ -5,7 +5,7 @@
 [![Allure Report](https://img.shields.io/badge/Allure-Report-ED5C5C?logo=allure&logoColor=white)](https://amblessed.github.io/employees/)
 
 
-This Employees REST API project— demostrates how to seamlessly integrate Java and Python to manage employee data. This project showcases how to combine the power of Spring Boot with the flexibility of Pytest, all backed by PostgreSQL.
+The Employees REST API demonstrates how to integrate **Java (Spring Boot + Spring Data JPA)** for backend development with **Python (Pytest)** for test automation. It showcases a complete workflow for managing employee data, backed by **PostgreSQL**, with automated tests and CI/CD integration to ensure reliability.
 
 # 🚀 Project Overview
 
@@ -86,6 +86,20 @@ The project is organized as follows:
 │           └───testcases
 ```
 
+### 🔧 EmployeeSeeder: Dynamic Test Data Generator
+
+The `EmployeeSeeder` class populates the database with 100 randomized employee records, each linked to a unique user and role. It supports:
+
+- Role-based access testing (`ROLE_EMPLOYEE`, `ROLE_MANAGER`, `ROLE_ADMIN`)
+- Password encoding for Spring Security
+- Plaintext password export for Pytest API tests
+- Unique email, phone, and user ID generation
+- Batch persistence for performance
+- JSON output to `src/test/resources/user_details.json`
+
+This enables seamless integration between backend authentication and external test automation frameworks.
+
+
 # 🧪 Testing with Pytest
 
 Comprehensive tests are included to validate the REST API endpoints and ensure consistent functionality.  
@@ -127,10 +141,20 @@ print(response.json())
 # 📈 Real-World Use Case
 This project serves as a practical example of **integrating Java and Python in a single workflow**. The backend, built with Spring Boot and PostgreSQL, provides a robust and scalable solution for managing employee data. The use of Pytest for testing demonstrates how Python can complement Java in the development process, offering flexibility and efficiency.
 
-# Future Work
-- Optional Docker setup for local development with PostgreSQL.
-- Integrate Swagger/OpenAPI for interactive API documentation.
-- Expand API endpoints and strengthen automated testing coverage.
+## Roadmap / Next Steps
+
+This project is under active development. Current focus areas:
+
+- ✅ Core CRUD API with Spring Boot and Spring Data JPA
+- ✅ Basic test automation using Python + Pytest
+- ✅ CI workflow for building and running tests
+
+Planned improvements:
+- 🔒 Add authentication/authorization (JWT)
+- 📝 Improve API documentation with OpenAPI/Swagger
+- 📊 Expand Pytest suite with more negative and edge-case scenarios
+- 🐳 Containerize API + database (Docker) for easier deployment and testing
+- 🚀 Enhance CI/CD pipeline (test reports, coverage badges, automated builds)
 
 # 💡 Conclusion
 The Employees REST API project demonstrates how Java and Python can be used together to support a reliable development workflow. Using Spring Boot, PostgreSQL, and Pytest, the system provides a complete approach to managing employee data, covering both backend implementation and testing.

@@ -27,18 +27,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     List<Employee> findEmployeeByDepartment(String department);
     List<Employee> findEmployeeByPosition(String position);
     List<Employee> findByFirstNameOrLastName(String firstName, String lastName);
-    Optional<Employee> findByEmployeeId(String employeeId);
-    void deleteByEmployeeId(String employeeId);
-    boolean existsByEmployeeId(String userId);
-
-
+    Optional<Employee> findByUser_UserId(String employeeId);
+    void deleteByUser_UserId(String employeeId);
+    boolean existsByUser_UserId(String userId);
 
     // define a custom query using JPQL with named params
 
     @Query("SELECT e FROM Employee e WHERE e.firstName = :firstName and e.lastName = :lastName")
     Optional<Employee> findByFirstNameAndLastNameNamedParams(@Param("firstName")String firstName, @Param("lastName")String lastName);
 
-
-    boolean existsByEmail(String email);
-    boolean existsByPhoneNumber(String phoneNumber);
 }

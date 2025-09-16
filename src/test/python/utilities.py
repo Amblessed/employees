@@ -108,35 +108,35 @@ def get_employee_details(user: str) -> List[Dict]:
 
 
 def run_request(request_type: RequestType, case: dict):
-    """Example: run API request using employee details."""
+    """
+    Run an API request using employee details from user_details.json.
+    Handles role-based access, self vs other targets, and placeholder replacement.
+    """
 
-    random_employees = get_employee_details(case["user"])
-    employee_1, employee_2 = random_employees
+    # Load users from the dynamic JSON
+    users_file = find_file("user_details.json")
+    users_data = load_json_file(users_file)
 
-    # Replace placeholders in endpoint/payload
-    replacements = {
-        "RANDOM_VALID_ID": f"/id/{employee_1['userId']}",
-        "RANDOM_VALID_EMP_ID": f"/id/{employee_1['userId']}",
-        "RANDOM_INVALID_ID": "/id/AAABBBCCC"
-    }
-    endpoint = case.get("endpoint")
-    if endpoint in replacements:
-        case["endpoint"] = replacements[endpoint]
+    # Filter users by role
+    admins = [{"userId": k, **v} for k, v in users_data.items() if v["role"] == "ROLE_ADMIN"]
+    managers = [{"userId": k, **v} for k, v in users_data.items() if v["role"] == "ROLE_MANAGER"]
+    employees = [{"userId": k, **v} for k, v in users_data.items() if v["role"] == "ROLE_EMPLOYEE"]
 
-    # Add authentication
-    if case["user"] == "EmployeeValid":
-        case["user"] = employee_2.get("userId")
-        case["password"] = employee_2.get("password")
-    else:
-        case["user"] = employee_1.get("userId")
-        case["password"] = employee_1.get("password")
+    actor, target = get_access_target(case, employees, managers, admins)
 
-    # Make request
-    url = f"{BASE_URL}{case.get('endpoint')}"
-    print("\n=============================================================================================\n")
-    print(case)
-    print(f"URL: {url}")
-    print(f"Running {request_type.name} request for {case['user']}")
+    # Replace placeholders in endpoint and payload
+    endpoint = case.get("endpoint", "")
+    if endpoint in ("RANDOM_VALID_ID", "RANDOM_VALID_EMP_ID") and target:
+        case["endpoint"] = f"/id/{target['userId']}"
+    elif endpoint == "RANDOM_INVALID_ID":
+        case["endpoint"] = "/id/AAABBBCCC"
+
+    # Set authentication
+    case["user"] = actor.get("userId")
+    case["password"] = actor.get("password")
+
+    # Construct request
+    url = f"{BASE_URL}{case.get('endpoint', '')}"
     auth = HTTPBasicAuth(case.get("user"), case.get("password"))
     response = requests.request(
         method=request_type.value,
@@ -147,17 +147,56 @@ def run_request(request_type: RequestType, case: dict):
         auth=auth
     )
 
-    print(f"Response: {response.text}")
-    print("=============================================================================================\n")
+    # Attach response to Allure
+    allure.attach(response.text, name="Response Body", attachment_type=allure.attachment_type.JSON)
 
-    # Attach response for Allure
-    allure.attach(
-        response.text,
-        name="Response Body",
-        attachment_type=allure.attachment_type.JSON
-    )
+    # Print debug info
+    print("\n============================== REQUEST ==============================")
+    print(f"Actor: {actor['userId']} ({actor['role']})")
+    print(f"Target: {target['userId'] if target else 'ALL'}")
+    print(f"URL: {url}")
+    print(f"Method: {request_type.name}")
+    print(f"Response: {response.status_code} {response.text}")
+    print("=====================================================================\n")
+
     validate_response(response, case)
     return response, case
+
+def _get_access_actor(case: Dict[str, Any], employees: List[Dict[str, Any]], managers: List[Dict[str, Any]], admins: List[Dict[str, Any]]):
+    if case["user_role"] == "Employee":
+        actor = random.choice(employees)
+    elif case["user_role"] == "Manager":
+        actor = random.choice(managers)
+    elif case["user_role"] == "Admin":
+        actor = random.choice(admins)
+    else:  # Guest or unknown
+        actor = {"userId": "guest", "password": ""}
+    return actor
+
+def get_access_target(case: Dict[str, Any], employees: List[Dict[str, Any]], managers: List[Dict[str, Any]], admins: List[Dict[str, Any]]):
+    # Choose the user running the test
+    actor = _get_access_actor(case, employees, managers, admins)
+
+    # Choose the target employee for endpoints that require it
+    if case.get("access_target") == "self":
+        target = actor
+    elif case.get("access_target") == "other":
+        if actor["role"] == "ROLE_EMPLOYEE":
+            # Employee should pick another employee (to test denial)
+            target = random.choice([e for e in employees if e != actor])
+        elif actor["role"] == "ROLE_MANAGER":
+            target = random.choice([e for e in employees if e != actor])
+        elif actor["role"] == "ROLE_ADMIN":
+            target = random.choice([e for e in employees if e != actor])
+        else:
+            target = {"userId": "AAABBBCCC"}  # Invalid ID
+    else:
+        target = None  # For GET all employees
+    print("\n============================== ACCESS TARGET ==============================")
+    print(actor)
+    print(target)
+    print("============================================================================\n")
+    return actor, target
 
 def _print_response(response):
     try:

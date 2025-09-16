@@ -13,11 +13,11 @@
   },
   {
     "story": "Employee tries to access another employee",
-    "endpoint": "RANDOM_VALID_EMP_ID",
+    "endpoint": "RANDOM_VALID_ID",
     "params": {},
     "payload": {},
     "expected_status": 403,
-    "expected_detail": "Access Denied",
+    "expected_detail": "You are not authorized to access this resource.",
     "check_field": "detail",
     "user_role": "Employee",
     "access_target": "other",
@@ -25,7 +25,7 @@
   },
   {
     "story": "Manager accesses a specific employee",
-    "endpoint": "RANDOM_VALID_EMP_ID",
+    "endpoint": "RANDOM_VALID_ID",
     "params": {},
     "payload": {},
     "expected_status": 200,
@@ -37,7 +37,7 @@
   },
   {
     "story": "Admin accesses a specific employee",
-    "endpoint": "RANDOM_VALID_EMP_ID",
+    "endpoint": "RANDOM_VALID_ID",
     "params": {},
     "payload": {},
     "expected_status": 200,

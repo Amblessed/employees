@@ -1,0 +1,98 @@
+[
+  {
+    "story": "Employee accesses own record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee found successfully",
+    "check_field": "employee",
+    "user_role": "Employee",
+    "access_target": "self",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Employee tries to access another employee",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "user_role": "Employee",
+    "access_target": "other",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Manager accesses a specific employee",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee found successfully",
+    "check_field": "employee",
+    "user_role": "Manager",
+    "access_target": "other",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Admin accesses a specific employee",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee found successfully",
+    "check_field": "employee",
+    "user_role": "Admin",
+    "access_target": "other",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Inactive employee tries to access own record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "Inactive users cannot access their profile.",
+    "check_field": "detail",
+    "user_role": "Employee",
+    "access_target": "self",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Unauthenticated user tries to access employee record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 401,
+    "expected_detail": "Full authentication is required to access this resource",
+    "check_field": "detail",
+    "user_role": "Unauthenticated",
+    "access_target": "other",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Manager tries to access employee with invalid ID",
+    "endpoint": "RANDOM_INVALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 404,
+    "expected_detail": "Employee not found",
+    "check_field": "detail",
+    "user_role": "Manager",
+    "access_target": "other",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Admin accesses inactive employee record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee found successfully",
+    "check_field": "employee",
+    "user_role": "Admin",
+    "access_target": "other",
+    "type": "Positive Test"
+  }
+]

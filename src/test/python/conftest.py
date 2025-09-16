@@ -14,23 +14,33 @@ import signal
 # --- Configuration ---
 
 
-# Pick the right executable name depending on OS
-MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
+# Maven config
+#MAVEN_HOME = os.environ.get("MVN_HOME", r"C:\apache-maven-3.9.5")
+#MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
+#MAVEN_CMD = os.path.join(MAVEN_HOME, "bin", MVN_EXEC)
+#SPRING_BOOT_CMD = [MAVEN_CMD, "spring-boot:run"]
 
-MAVEN_HOME = os.environ.get("MVN_HOME", r"C:\apache-maven-3.9.5")  # default if not set
+MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
+MAVEN_HOME = os.environ.get("MVN_HOME", r"C:\apache-maven-3.9.5") # default if not set
 MAVEN_CMD = os.path.join(MAVEN_HOME, "bin", MVN_EXEC)
 SPRING_BOOT_CMD = [MAVEN_CMD, "spring-boot:run"]
 
+# Server config
 SERVER_PORT = 9090
 BASE_URL = f"http://localhost:{SERVER_PORT}/api/employees/"
-STARTUP_WAIT = 90  # seconds
-POLL_INTERVAL = 1  # seconds
-SLEEP_TIME = 120  # seconds
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
-RESULTS_DIR = os.path.join(PROJECT_ROOT, "allure-results")
-MAX_RETRIES = 10  # number of attempts
-WAIT_SECONDS = 3  # seconds between retries
+# Timing constants
+STARTUP_WAIT = 90       # seconds to wait for app startup
+POLL_INTERVAL = 1       # polling interval in seconds
+SLEEP_TIME = 300        # cooldown time in seconds
+MAX_RETRIES = 10        # number of attempts
+WAIT_SECONDS = 3        # seconds between retries
+
+# Project paths
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+RESULTS_DIR = PROJECT_ROOT / "allure-results"
+USER_DETAILS_FILE = PROJECT_ROOT / "src/test/resources/user_details.json"
 
 
 def is_port_open(port, host="localhost"):
@@ -101,10 +111,12 @@ def spring_boot_server():
 
     print("Freeing port 9090 if in use...")
     free_port(SERVER_PORT)
+    print(f"Project root: {PROJECT_ROOT}")
 
     # Start Spring Boot
     print("\nStarting Spring Boot server...")
-    log_file = "springboot" + "_" + time.strftime("%Y%m%d_%H%M%S") + ".log"
+    # log_file = "springboot" + "_" + time.strftime("%Y%m%d_%H%M%S") + ".log"
+    log_file = "springboot.log"
     with open(log_file, "w") as log:
         process = subprocess.Popen(SPRING_BOOT_CMD, cwd=PROJECT_ROOT, stdout=log, stderr=log)
 
@@ -192,8 +204,6 @@ def wait_for_server(url=BASE_URL):
         time.sleep(WAIT_SECONDS)
     raise RuntimeError("Server did not become ready in time")
 
-
-USER_DETAILS_FILE = Path(PROJECT_ROOT) / "src/test/resources/user_details.json"
 
 def wait_for_seeder_json(timeout=60):
     """Wait until user_details.json is created by the Spring Boot seeder."""

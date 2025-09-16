@@ -68,7 +68,7 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Transactional
     public EmployeeResponse deleteByEmployeeId(String employeeId) {
         EmployeeResponse employee = findByEmployeeId(employeeId);
-        employeeRepository.deleteByEmployeeId(employeeId);
+        employeeRepository.deleteByUser_UserId(employeeId);
         return employee;
     }
 
@@ -93,7 +93,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public EmployeeResponse findByEmployeeId(String employeeId) {
-        Employee employee = employeeRepository.findByEmployeeId(employeeId)
+        Employee employee = employeeRepository.findByUser_UserId(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employeeId: " + employeeId));
         return mapToResponse(employee);
     }
@@ -127,11 +127,11 @@ public class EmployeeServiceImpl implements EmployeeService{
         }
 
         Employee employee = convertToEmployee(employeeRequest);
-        employee.setEmployeeId(generateUniqueEmployeeId());
+        //employee.setEmployeeId();
 
         // Step 2: Create system user using employeeId
         User user = new User();
-        user.setUserId(employee.getEmployeeId());
+        user.setUserId(generateUniqueEmployeeId());
         user.setEmail(employee.getEmail());
         user.setPassword(passwordEncoder.encode(password));
         user.setActive(true);
@@ -146,7 +146,6 @@ public class EmployeeServiceImpl implements EmployeeService{
         Role role = new Role();
         role.setUserRole("ROLE_EMPLOYEE");
         role.setUser(user);
-        role.setEmail(user.getEmail());
         roleRepository.save(role);
 
         return mapToResponse(savedEmployee);
@@ -154,7 +153,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     @Override
     public EmployeeResponse update(String id, EmployeeRequest employeeRequest) {
-        employeeRepository.findByEmployeeId(id);
+        employeeRepository.findByUser_UserId(id);
         Employee employee = convertToEmployee(employeeRequest);
         Employee savedEmployee = employeeRepository.save(employee);
         return mapToResponse(savedEmployee);
@@ -180,7 +179,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 
     public EmployeeResponse mapToResponse(Employee employee) {
         EmployeeResponse response = new EmployeeResponse();
-        response.setEmployeeId(employee.getEmployeeId());
+        response.setEmployeeId(employee.getUser().getUserId());
         response.setFirstName(employee.getFirstName());
         response.setLastName(employee.getLastName());
         response.setEmail(employee.getEmail());
@@ -203,7 +202,7 @@ public class EmployeeServiceImpl implements EmployeeService{
         do {
             // EMP-XXXX format using first 8 characters of UUID
             employeeId = "EMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        } while (employeeRepository.existsByEmployeeId(employeeId));
+        } while (employeeRepository.existsByUser_UserId(employeeId));
 
         return employeeId;
     }
