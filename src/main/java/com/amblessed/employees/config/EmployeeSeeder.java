@@ -46,7 +46,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 1500;
+    private static final int EMPLOYEE_COUNT = 1000;
     static Set<String> generatedEmails = new HashSet<>();
     static Set<String> generatedPhoneNumbers = new HashSet<>();
     static Set<String> generatedUserIds = new HashSet<>();
@@ -90,7 +90,6 @@ public class EmployeeSeeder implements CommandLineRunner {
             }
         }
 
-        List<Employee> employeesBatch = new ArrayList<>();
         List<User> usersBatch = new ArrayList<>();
 
         // store plain-text passwords
@@ -123,14 +122,19 @@ public class EmployeeSeeder implements CommandLineRunner {
 
             // Save mapping for pytest
             emailPasswordMap.put(userId, createEmployeeDetails(email, plainPassword, randomRole));
-
             usersBatch.add(user);
 
             // Save in batches
             if (usersBatch.size() >= BATCH_SIZE) {
                 userRepository.saveAll(usersBatch);
                 usersBatch.clear();
-                log.info("Seeded {} employees so far...", i + 1);
+                //log.info("Seeded {} employees so far...", i + 1);
+            }
+
+            // Progress log every 100 employees or at final record
+            if ((i + 1) % 100 == 0 || i == EMPLOYEE_COUNT - 1) {
+                int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+                log.info("Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
             }
         }
 

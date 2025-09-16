@@ -8,8 +8,6 @@ package com.amblessed.employees.security;
  * @Created: 13-Sep-25
  */
 
-
-import com.amblessed.employees.config.EmployeeSeeder;
 import com.amblessed.employees.entity.EmployeeResponse;
 import com.amblessed.employees.service.EmployeeService;
 import org.slf4j.Logger;
