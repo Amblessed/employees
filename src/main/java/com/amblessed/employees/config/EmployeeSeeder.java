@@ -46,7 +46,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 1000;
+    private static final int EMPLOYEE_COUNT = 500;
     static Set<String> generatedEmails = new HashSet<>();
     static Set<String> generatedPhoneNumbers = new HashSet<>();
     static Set<String> generatedUserIds = new HashSet<>();
@@ -58,7 +58,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${user.details.path:src/test/resources/user_details.json}")
     private String userDetailsPath;
 
-    private static final int BATCH_SIZE = 250; // batch save size
+    private static final int BATCH_SIZE = 100; // batch save size
 
     @Override
     @Transactional
@@ -129,7 +129,8 @@ public class EmployeeSeeder implements CommandLineRunner {
             if (usersBatch.size() >= BATCH_SIZE) {
                 userRepository.saveAll(usersBatch);
                 usersBatch.clear();
-                //log.info("Seeded {} employees so far...", i + 1);
+                int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+                log.info("✅ Batch saved at iteration {} ({}%)", i + 1, percent);
             }
 
             // Progress log every 100 employees or at final record
