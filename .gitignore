@@ -32,6 +32,9 @@ src/allure-report/
 allure-report/
 *.log
 
+src/test/resources/testcases/archive.txt
+notes.txt
+
 
 ### NetBeans ###
 /nbproject/private/

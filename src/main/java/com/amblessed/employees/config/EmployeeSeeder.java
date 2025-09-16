@@ -46,7 +46,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 2000;
+    private static final int EMPLOYEE_COUNT = 1500;
     static Set<String> generatedEmails = new HashSet<>();
     static Set<String> generatedPhoneNumbers = new HashSet<>();
     static Set<String> generatedUserIds = new HashSet<>();
