@@ -96,41 +96,47 @@ public class EmployeeSeeder implements CommandLineRunner {
 
         for (int i = 0; i < EMPLOYEE_COUNT; i++) {
             log.info("Starting employee iteration {}", i + 1);
-            Employee employee = EmployeeGenerator.createRandomEmployee();
-            String email = ensureUniqueEmail(employee.getEmail(), generatedEmails);
-            String phoneNumber = ensureUniquePhone(employee.getPhoneNumber(), generatedPhoneNumbers);
-            String userId = ensureUniqueUserId(generateUniqueEmployeeId(), generatedUserIds);
+            try {
+                Employee employee = EmployeeGenerator.createRandomEmployee();
+                String email = ensureUniqueEmail(employee.getEmail(), generatedEmails);
+                String phoneNumber = ensureUniquePhone(employee.getPhoneNumber(), generatedPhoneNumbers);
+                String userId = ensureUniqueUserId(generateUniqueEmployeeId(), generatedUserIds);
 
-            employee.setEmail(email);
-            employee.setPhoneNumber(phoneNumber);
+                employee.setEmail(email);
+                employee.setPhoneNumber(phoneNumber);
 
 
-            // Generate User
-            String plainPassword = EmployeeGenerator.generateValidPassword();
-            String encodedPassword = passwordEncoder.encode(plainPassword);
-            User user = createUser(userId, email, encodedPassword);
+                // Generate User
+                String plainPassword = EmployeeGenerator.generateValidPassword();
+                String encodedPassword = passwordEncoder.encode(plainPassword);
+                User user = createUser(userId, email, encodedPassword);
 
-            // Generate Role
-            String randomRole = generateRandomRole();
-            Role createdRole = createRole(user, randomRole);
+                // Generate Role
+                String randomRole = generateRandomRole();
+                Role createdRole = createRole(user, randomRole);
 
-            // Link user ↔ role
-            user.setRole(createdRole);
+                // Link user ↔ role
+                user.setRole(createdRole);
 
-            // Link employee ↔ user
-            employee.setUser(user);
-            user.setEmployee(employee);
+                // Link employee ↔ user
+                employee.setUser(user);
+                user.setEmployee(employee);
 
-            // Save mapping for pytest
-            emailPasswordMap.put(userId, createEmployeeDetails(email, plainPassword, randomRole));
-            usersBatch.add(user);
+                // Save mapping for pytest
+                emailPasswordMap.put(userId, createEmployeeDetails(email, plainPassword, randomRole));
+                usersBatch.add(user);
 
-            // Save in batches
-            if (usersBatch.size() >= BATCH_SIZE) {
-                userRepository.saveAll(usersBatch);
-                usersBatch.clear();
-                int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
-                log.info("✅ Batch saved at iteration {} ({}%)", i + 1, percent);
+                // Save in batches
+                if (usersBatch.size() >= BATCH_SIZE) {
+                    userRepository.saveAll(usersBatch);
+                    usersBatch.clear();
+                    int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+                    log.info("✅ Batch saved at iteration {} ({}%)", i + 1, percent);
+                }
+            }
+            catch (Exception e) {
+                log.error("❌ Error at iteration {}: {}", i + 1, e.getMessage(), e);
+                break; // optional: stop loop or continue
             }
 
             // Progress log every 100 employees or at final record
@@ -138,6 +144,8 @@ public class EmployeeSeeder implements CommandLineRunner {
                 int percent = ((i + 1) * 50) / EMPLOYEE_COUNT;
                 log.info("Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
             }
+
+
         }
 
         // Save any remaining records
