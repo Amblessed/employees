@@ -8,10 +8,11 @@ package com.amblessed.employees.security;
  * @Created: 11-Sep-25
  */
 
-
 import com.amblessed.employees.exception.GlobalExceptionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,8 @@ import java.io.IOException;
 
 @Component
 public class CustomAuthEntryPoint implements AuthenticationEntryPoint {
+
+    private final Logger log = LoggerFactory.getLogger(CustomAuthEntryPoint.class);
 
     private final GlobalExceptionHandler exceptionHandler;
 
@@ -39,11 +42,11 @@ public class CustomAuthEntryPoint implements AuthenticationEntryPoint {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String ip = request.getRemoteAddr();
         String path = request.getRequestURI();
-        System.out.println("Unauthorized access to " + path + " from IP: " + ip);
+        log.info("Unauthorized access to {}, from IP: {}", path , ip);
         if (auth != null) {
-            System.out.println("User: " + auth.getName() + ", Roles: " + auth.getAuthorities());
+            log.info("User: {}, Role: {}", auth.getName() , auth.getAuthorities());
         } else {
-            System.out.println("Authentication is null. Request URI: " + request.getRequestURI());
+            log.info("Authentication is null. Request URI: {}", request.getRequestURI());
         }
 
         ProblemDetail detail = exceptionHandler.createProblemDetail(authException, HttpStatus.UNAUTHORIZED);

@@ -9,7 +9,6 @@ package com.amblessed.employees.service;
  */
 
 
-import com.amblessed.employees.config.EmployeeSeeder;
 import com.amblessed.employees.entity.CustomUserDetails;
 import com.amblessed.employees.entity.User;
 import com.amblessed.employees.repository.UserRepository;

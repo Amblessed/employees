@@ -46,7 +46,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     private final Logger log = LoggerFactory.getLogger(EmployeeSeeder.class);
     Random random = new Random();
 
-    private static final int EMPLOYEE_COUNT = 750;
+    private static final int EMPLOYEE_COUNT = 645;
     static Set<String> generatedEmails = new HashSet<>();
     static Set<String> generatedPhoneNumbers = new HashSet<>();
     static Set<String> generatedUserIds = new HashSet<>();
@@ -58,11 +58,13 @@ public class EmployeeSeeder implements CommandLineRunner {
     @Value("${user.details.path:src/test/resources/user_details.json}")
     private String userDetailsPath;
 
-    private static final int BATCH_SIZE = 50; // batch save size
+    private static final int BATCH_SIZE = 150; // batch save size
+    int lastLoggedPercent = 0;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        long start = System.currentTimeMillis();
 
         if (!seedEmployees) {
             log.info("Employee seeding skipped (app.seed-employees=false)");
@@ -70,13 +72,7 @@ public class EmployeeSeeder implements CommandLineRunner {
         }
 
         // Clear existing data
-        log.info("Clearing existing data...");
-        employeeRepository.deleteAll();
-        roleRepository.deleteAll();
-        userRepository.deleteAll();
-
-
-        log.info("Cleared previous data!");
+       resetDatabase();
 
         log.info("Seeding {} employees...", EMPLOYEE_COUNT);
         File outputFile = new File(userDetailsPath);
@@ -91,8 +87,6 @@ public class EmployeeSeeder implements CommandLineRunner {
         }
 
         List<User> usersBatch = new ArrayList<>();
-
-        // store plain-text passwords
 
 
         for (int i = 0; i < EMPLOYEE_COUNT; i++) {
@@ -132,17 +126,10 @@ public class EmployeeSeeder implements CommandLineRunner {
                     int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
                     log.info("✅ Batch saved at iteration {} ({}%)", i + 1, percent);
                 }
-                // Progress log every 100 employees or at final record
-                if ((i + 1) % 50 == 0 || i == EMPLOYEE_COUNT - 1) {
-                    int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
-                    String bar = "=".repeat(percent / 5) + " ".repeat(20 - (percent / 5));
-                    log.info("📊 Seeding progress: {} of {} employees ({}%)", i + 1, EMPLOYEE_COUNT, percent);
-                    log.info("Progress [{}] {}%", bar, percent);
-                }
+                showProgresBar(i);
 
             } catch (Exception e) {
                 log.error("❌ Seeder failed at iteration: {}", e.getMessage(), e);
-                //break; // optional: stop loop or continue
             }
         }
 
@@ -152,11 +139,41 @@ public class EmployeeSeeder implements CommandLineRunner {
         }
 
         // ✅ Write passwords to JSON file for pytest
+        writeToJsonFile(start, emailPasswordMap);
+    }
+
+    private void writeToJsonFile(long startTime, Map<String, Object> emailPasswordMap) throws IOException {
         log.info("Writing user details to {}", userDetailsPath);
         new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(userDetailsPath), emailPasswordMap);
         log.info("User details written to {}", userDetailsPath);
         log.info("Successfully seeded {} employees!", EMPLOYEE_COUNT);
+        long duration = System.currentTimeMillis() - startTime;
+        log.info("⏱️ Seeding completed in {} ms", duration);
+    }
 
+    private void resetDatabase(){
+        log.info("Clearing existing data...");
+        employeeRepository.deleteAll();
+        roleRepository.deleteAll();
+        userRepository.deleteAll();
+        log.info("Cleared previous data!");
+    }
+
+    private void showProgresBar(int i){
+        // Progress log every 100 employees or at final record
+        int percent = ((i + 1) * 100) / EMPLOYEE_COUNT;
+
+        // Only update if percent changed or last employee
+        if (percent != lastLoggedPercent || i == EMPLOYEE_COUNT - 1) {
+            int filledLength = percent / 5; // 20 chars total
+            String bar = "=".repeat(filledLength) + " ".repeat(20 - filledLength);
+
+            // Print bar, percent, and exact count
+            if (percent % 10 == 0) {
+                log.info("Progress [{}] {}% ({} of {})", bar, percent, (i + 1), EMPLOYEE_COUNT);
+            }
+            lastLoggedPercent = percent;
+        }
     }
 
     private String generateUniqueEmployeeId() {
@@ -195,7 +212,7 @@ public class EmployeeSeeder implements CommandLineRunner {
     // --- Helper methods ---
     private String ensureUniqueEmail(String email, Set<String> existingEmails) {
         while (existingEmails.contains(email)) {
-            email = email.replaceFirst("@", String.format("%d@", random.nextInt(100)));
+            email = email.replaceFirst("@", String.format("0%d@", random.nextInt(1,9)));
         }
         existingEmails.add(email);
         return email;

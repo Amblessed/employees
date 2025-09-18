@@ -12,7 +12,7 @@
       "type": "Positive Test"
     },
     {
-    "story": "Manager accesses all employees",
+    "story": "Admin accesses all employees",
     "endpoint": "",
     "params": {"pageNumber": 1, "pageSize": 20},
     "payload": {},

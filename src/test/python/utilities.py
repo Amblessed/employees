@@ -107,15 +107,20 @@ def get_employee_details(user: str) -> List[Dict]:
     return random.sample(pool, 2)
 
 
+def get_all_users() -> Dict:
+    """Return a single user's details based on user type."""
+    users_file = find_file("user_details.json")
+    users_data = load_json_file(users_file)
+    return users_data
+
+
 def run_request(request_type: RequestType, case: dict):
     """
     Run an API request using employee details from user_details.json.
     Handles role-based access, self vs other targets, and placeholder replacement.
     """
 
-    # Load users from the dynamic JSON
-    users_file = find_file("user_details.json")
-    users_data = load_json_file(users_file)
+    users_data = get_all_users()
 
     # Filter users by role
     admins = [{"userId": k, **v} for k, v in users_data.items() if v["role"] == "ROLE_ADMIN"]
