@@ -3,6 +3,7 @@ package com.amblessed.employees.security;
 
 import com.amblessed.employees.repository.UserRepository;
 import com.amblessed.employees.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,7 +25,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final UserRepository userRepository;
 
     @Bean
     public RoleHierarchy roleHierarchy() {
@@ -42,7 +46,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
+    public UserDetailsService userDetailsService() {
         return new CustomUserDetailsService(userRepository);
     }
 
