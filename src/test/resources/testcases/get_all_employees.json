@@ -2,7 +2,7 @@
     {
       "story": "Manager accesses all employees",
       "endpoint": "",
-      "params": {"pageNumber": 1, "pageSize": 20},
+      "params": {"page": 1, "size": 20},
       "payload": {},
       "expected_status": 200,
       "expected_detail": null,
@@ -14,7 +14,7 @@
     {
     "story": "Admin accesses all employees",
     "endpoint": "",
-    "params": {"pageNumber": 1, "pageSize": 20},
+    "params": {"page": 1, "size": 20},
     "payload": {},
     "expected_status": 200,
     "expected_detail": null,
@@ -26,7 +26,7 @@
   {
     "story": "Employee tries to list all employees",
     "endpoint": "",
-    "params": {"pageNumber": 1, "pageSize": 20},
+    "params": {"page": 1, "size": 20},
     "payload": {},
     "expected_status": 403,
     "expected_detail": "You are not authorized to access this resource.",

@@ -65,9 +65,7 @@ def test_get_all_employees(case):
     assert employees is not None, "Response should contain 'employees' key"
     assert isinstance(employees, list)
 
-    print(response_json.get("size"))
-
-    page_size = int(case["params"]["pageSize"]) if case.get("params") else case["pageSize"]
+    page_size = int(case["params"]["size"]) if case.get("params") else case["size"]
     assert len(employees) == page_size, "Get All Employees test failed"
 
 

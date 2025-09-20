@@ -167,6 +167,10 @@ def run_request(request_type: RequestType, case: dict):
     # Construct request
     url = f"{BASE_URL}{case.get('endpoint', '')}"
     auth = HTTPBasicAuth(case.get("user"), case.get("password"))
+
+
+    print(f"Params: {case["params"]}")
+
     response = requests.request(
         method=request_type.value,
         url=url,
@@ -181,6 +185,8 @@ def run_request(request_type: RequestType, case: dict):
 
     # Print debug info
     print("\n============================== REQUEST ==============================")
+    print(actor)
+    print(target)
     print(f"Actor: {actor['userId']} ({actor['role']})")
     print(f"Target: {target['userId'] if target else 'ALL'}")
     print(f"URL: {url}")
@@ -221,10 +227,6 @@ def get_access_target(case: Dict[str, Any], employees: List[Dict[str, Any]], man
             target = {"userId": "AAABBBCCC"}  # Invalid ID
     else:
         target = None  # For GET all employees
-    print("\n============================== ACCESS TARGET ==============================")
-    print(actor)
-    print(target)
-    print("============================================================================\n")
     return actor, target
 
 def _print_response(response):
