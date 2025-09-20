@@ -1,14 +1,15 @@
 [
   {
-  "story": "Access Denied",
-  "endpoint": "",
+  "story": "Employee accesses own record",
+  "endpoint": "RANDOM_VALID_ID",
   "params": {},
   "payload": {},
-  "expected_status": 403,
-  "expected_detail": "You are not authorized to access this resource.",
-  "check_field": "detail",
-  "type": "Negative Test",
-  "user": "Employee",
+  "expected_status": 200,
+  "expected_detail": "Employee found successfully",
+  "check_field": "employee",
+  "type": "Positive Test",
+  "access_target": "self",
+  "user_role": "Employee",
   "method": "GET"
   },
   {
@@ -20,19 +21,21 @@
   "expected_detail": "You are not authorized to access this resource.",
   "check_field": "detail",
   "type": "Negative Test",
-  "user": "EmployeeValid",
+  "access_target": "other",
+  "user_role": "Employee",
   "method": "GET"
   },
   {
   "story": "Access Granted",
-  "endpoint": "RANDOM_VALID_EMP_ID",
+  "endpoint": "RANDOM_VALID_ID",
   "params": {},
   "payload": {},
   "expected_status": 200,
-  "expected_detail": "Access Granted",
-  "check_field": "",
+  "expected_detail": "Employee found successfully",
+  "check_field": "employee",
   "type": "Positive Test",
-  "user": "Employee",
+  "user_role": "Manager",
+  "access_target": "other",
   "method": "GET"
   },
   {
@@ -42,21 +45,23 @@
     "payload": {},
     "expected_status": 403,
     "expected_detail": "You are not authorized to access this resource.",
-    "check_field": "",
+    "check_field": "detail",
     "type": "Negative Test",
-    "user": "Employee",
+    "user_role": "Employee",
+    "access_target": "other",
     "method": "POST"
   },
   {
     "story": "Access Denied",
-    "endpoint": "RANDOM_VALID_EMP_ID",
+    "endpoint": "RANDOM_VALID_ID",
     "params": {},
     "payload": {},
     "expected_status": 403,
     "expected_detail": "You are not authorized to access this resource.",
-    "check_field": "",
+    "check_field": "detail",
     "type": "Negative Test",
-    "user": "EmployeeValid",
+    "user_role": "Employee",
+    "access_target": "other",
     "method": "PUT"
   },
   {
@@ -66,9 +71,10 @@
     "payload": {},
     "expected_status": 403,
     "expected_detail": "You are not authorized to access this resource.",
-    "check_field": "",
+    "check_field": "detail",
     "type": "Negative Test",
-    "user": "Employee",
+    "user_role": "Employee",
+    "access_target": "self",
     "method": "DELETE"
   }
 ]

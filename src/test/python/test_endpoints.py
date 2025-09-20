@@ -14,10 +14,9 @@ test_cases_security = load_json_file("testcases_security.json")
 
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
-@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.security
 @pytest.mark.parametrize("case", test_cases_security)
-def test_generic_security_employee(case):
+def test_security_employee(case):
     """
     Generic SECURITY test for Employee API with dynamic Allure labels and severity.
     """
