@@ -12,10 +12,20 @@ from pathlib import Path
 import signal
 
 # --- Configuration ---
+
+
+# Maven config
+#MAVEN_HOME = os.environ.get("MVN_HOME", r"C:\apache-maven-3.9.5")
+#MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
+#MAVEN_CMD = os.path.join(MAVEN_HOME, "bin", MVN_EXEC)
+#SPRING_BOOT_CMD = [MAVEN_CMD, "spring-boot:run"]
+
 MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
 MAVEN_HOME = os.environ.get("MVN_HOME", r"C:\apache-maven-3.9.5") # default if not set
 MAVEN_CMD = os.path.join(MAVEN_HOME, "bin", MVN_EXEC)
 SPRING_BOOT_CMD = [MAVEN_CMD, "spring-boot:run"]
+
+
 
 
 # Server config
@@ -35,6 +45,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIR = PROJECT_ROOT / "allure-results"
 USER_DETAILS_PATH = Path("src/test/resources/user_details.json")
 USER_DETAILS_FILE = PROJECT_ROOT / "src/test/resources/user_details.json"
+
+SPRING_BOOT_READY = False  # global flag
 
 
 def is_port_open(port, host="localhost"):
@@ -114,7 +126,7 @@ def spring_boot_server():
     with open(log_file, "w") as log:
         process = subprocess.Popen(SPRING_BOOT_CMD, cwd=PROJECT_ROOT, stdout=log, stderr=log)
 
-
+    global SPRING_BOOT_READY
     # Wait until server is up
     print(f"Waiting for Spring Boot to start on port {SERVER_PORT}...")
     wait_for_port(SERVER_PORT, timeout=STARTUP_WAIT)
@@ -122,6 +134,7 @@ def spring_boot_server():
     # Wait dynamically for seeder JSON
     wait_for_seeder_json(timeout=SLEEP_TIME)
 
+    SPRING_BOOT_READY = True
 
     # Run tests
     yield
@@ -214,11 +227,11 @@ def wait_for_seeder_json(timeout=60):
         time.sleep(POLL_INTERVAL)
     raise FileNotFoundError(f"{USER_DETAILS_FILE} not freshly updated after {timeout} seconds")
 
-# def pytest_generate_tests(metafunc):
-#     # only parametrize after spring boot & seeder are ready
-#     if "user_id" in metafunc.fixturenames and "details" in metafunc.fixturenames:
-#         wait_for_seeder_json(timeout=300)
-#         with USER_DETAILS_FILE.open(encoding="utf-8") as f:
-#             user_details = json.load(f)
-#         ids = list(user_details.keys())
-#         metafunc.parametrize("user_id,details", user_details.items(), ids=ids)
+def pytest_generate_tests(metafunc):
+    # only parametrize after spring boot & seeder are ready
+    if "user_id" in metafunc.fixturenames and "details" in metafunc.fixturenames:
+        wait_for_seeder_json(timeout=300)
+        with USER_DETAILS_FILE.open(encoding="utf-8") as f:
+            user_details = json.load(f)
+        ids = list(user_details.keys())
+        metafunc.parametrize("user_id,details", user_details.items(), ids=ids)

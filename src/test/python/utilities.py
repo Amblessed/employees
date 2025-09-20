@@ -1,5 +1,6 @@
 import json
 import os
+import pytest
 import random
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
@@ -121,6 +122,29 @@ def run_request(request_type: RequestType, case: dict):
     """
 
     users_data = get_all_users()
+
+
+
+    if case == {}:
+        allure_list = []
+        for user_id,details in users_data.items():
+            password = details["password"]
+            role = details["role"]
+            url = f"{BASE_URL}/id/{user_id}"
+            auth = HTTPBasicAuth(user_id, password)
+            response = requests.get(url, auth=auth, timeout=15)
+            body = response.json()
+            assert response.status_code == 200, f"{role} {user_id} failed to access record"
+            assert "employee" in body
+            allure_list.append(body)
+
+            if role == "ROLE_EMPLOYEE":
+                assert body.get("detail") == "Employee found successfully"
+            elif role not in {"ROLE_MANAGER", "ROLE_ADMIN"}:
+                pytest.fail(f"Unknown role for user {user_id}: {role}")
+
+        allure.attach(str(allure_list), name="Employees can access own record", attachment_type=allure.attachment_type.TEXT)
+        return
 
     # Filter users by role
     admins = [{"userId": k, **v} for k, v in users_data.items() if v["role"] == "ROLE_ADMIN"]

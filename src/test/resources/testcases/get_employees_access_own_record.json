@@ -1,0 +1,14 @@
+[
+  {
+    "story": "Employee accesses own record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee found successfully",
+    "check_field": "employee",
+    "user_role": "",
+    "access_target": "self",
+    "type": "Positive Test"
+  }
+]

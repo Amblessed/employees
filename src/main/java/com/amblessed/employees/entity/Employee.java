@@ -70,7 +70,7 @@ public class Employee {
     private Boolean active = true;
 
     // Link to User (login credentials)
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

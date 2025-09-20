@@ -11,11 +11,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,13 +28,20 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private final ObjectMapper objectMapper;
+    private static final URI COMMON_ERROR_URI = URI.create("http://localhost:9090/api/v1/common-errors");
 
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleGeneralException(Exception exception) {
+        return createProblemDetail(exception, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler({ConstraintViolationException.class, MethodArgumentNotValidException.class,
             SQLIntegrityConstraintViolationException.class, HandlerMethodValidationException.class, InvalidPasswordException.class})
@@ -42,7 +49,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problemDetail.setType(URI.create("http://localhost:9090/api/v1/common-errors"));
+        problemDetail.setType(COMMON_ERROR_URI);
         problemDetail.setTitle(HttpStatus.BAD_REQUEST.getReasonPhrase());
         problemDetail.setInstance(problemDetail.getInstance());
         problemDetail.setProperties(map);
@@ -54,12 +61,18 @@ public class GlobalExceptionHandler {
                     .map(ConstraintViolation::getMessage)
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Validation failed");
-            case MethodArgumentNotValidException ex -> detailMessage = ex.getBindingResult()
-                    .getFieldErrors()
-                    .stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .reduce((a, b) -> a + "; " + b)
-                    .orElse("Validation failed");
+            case MethodArgumentNotValidException ex -> {
+                Map<String, String> errors = ex.getBindingResult()
+                        .getFieldErrors()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                FieldError::getField,
+                                err -> Optional.ofNullable(err.getDefaultMessage()).orElse("Invalid value"),
+                                (existing, replacement) -> existing  // handle duplicate field errors
+                        ));
+                map.put("errors", errors);
+                detailMessage = "Validation failed";
+            }
             case SQLIntegrityConstraintViolationException ex -> detailMessage = ex.getMessage();
             case HandlerMethodValidationException ex ->
                 detailMessage = "id " + Optional.of(ex.getDetailMessageArguments())
@@ -75,11 +88,11 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ProblemDetail handleBookNotFoundException(ResourceNotFoundException exception) {
+    public ProblemDetail handleResourceNotFoundException(ResourceNotFoundException exception) {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        problemDetail.setType(URI.create("http://localhost:8080/api/v1/common-errors"));
+        problemDetail.setType(COMMON_ERROR_URI);
         problemDetail.setTitle(HttpStatus.NOT_FOUND.getReasonPhrase());
         problemDetail.setDetail(exception.getMessage());
         problemDetail.setProperties(map);
@@ -91,10 +104,15 @@ public class GlobalExceptionHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-        problemDetail.setType(URI.create("http://localhost:8080/api/v1/common-errors"));
+        problemDetail.setType(COMMON_ERROR_URI);
         if (ex.getCause() instanceof ConstraintViolationException || ex.getMessage().contains("employee_email_key")) {
             problemDetail.setTitle(HttpStatus.CONFLICT.getReasonPhrase());
             problemDetail.setDetail("Email already exists.");
+            problemDetail.setProperties(map);
+        }
+        else {
+            problemDetail.setTitle("Data Integrity Violation");
+            problemDetail.setDetail("A database constraint was violated.");
             problemDetail.setProperties(map);
         }
         return problemDetail;
@@ -105,7 +123,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-        problemDetail.setType(URI.create("http://localhost:8080/api/v1/common-errors"));
+        problemDetail.setType(COMMON_ERROR_URI);
         problemDetail.setTitle(HttpStatus.FORBIDDEN.getReasonPhrase());
         problemDetail.setDetail("You are not authorized to access this resource.");
         problemDetail.setProperties(map);
@@ -122,8 +140,9 @@ public class GlobalExceptionHandler {
     public ProblemDetail createProblemDetail(Exception exception, HttpStatus status) {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
+        map.put("status", status.value());
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
-        problemDetail.setType(URI.create("http://localhost:8080/api/v1/common-errors"));
+        problemDetail.setType(COMMON_ERROR_URI);
         problemDetail.setTitle(status.getReasonPhrase());
         problemDetail.setDetail(exception.getMessage());
         problemDetail.setProperties(map);

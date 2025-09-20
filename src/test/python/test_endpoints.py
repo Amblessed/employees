@@ -3,10 +3,6 @@ import pytest
 import allure
 from utilities import load_json_file, run_request, RequestType
 from db_connection import get_employee_from_db, get_all_employees_from_db
-from requests.auth import HTTPBasicAuth
-import requests, json
-from pathlib import Path
-
 
 
 test_cases = load_json_file("testcases.json")
@@ -137,34 +133,10 @@ def test_generic_delete_employee(case):
 
 
 
-def load_user_details():
-    path = Path("src/test/resources/user_details.json")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+def test_user_can_access_own_record():
+    run_request(RequestType.GET, case={})
 
 
-#@pytest.mark.parametrize("user_id, details", load_user_details().items())
-def test_user_can_access_own_record(user_id, details):
-    # email = details["email"]
-    password = details["password"]
-    role = details["role"]
-
-    base_url = "http://localhost:9090/api/employees/id/"
-    timeout = 15
-
-    url = f"{base_url}{user_id}"
-    auth = HTTPBasicAuth(user_id, password)
-    response = requests.get(url, auth=auth, timeout=timeout)
-
-    if role == "ROLE_EMPLOYEE":
-        assert response.status_code == 200, f"Employee {user_id} failed to access own record"
-        assert "employee" in response.json()
-        assert response.json().get("detail") == "Employee found successfully"
-    elif role in ("ROLE_MANAGER", "ROLE_ADMIN"):
-        assert response.status_code == 200, f"{role} {user_id} failed to access record"
-        assert "employee" in response.json()
-    else:
-        pytest.fail(f"Unknown role for user {user_id}: {role}")
 
 
 
