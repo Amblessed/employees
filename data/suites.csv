@@ -1,0 +1,74 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","106","src.test.python","test_endpoints","","","","test_get_all_employees[case1]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case6]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case3]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:15 UTC 2025","Sat Sep 20 14:12:15 UTC 2025","331","src.test.python","test_endpoints","","","","test_security_employee[case0]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","105","src.test.python","test_endpoints","","","","test_get_employee_by_id[case0]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case2]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:35 UTC 2025","17860","src.test.python","test_endpoints","","","","test_user_can_access_own_record",""
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","104","src.test.python","test_endpoints","","","","test_get_employee_by_id[case1]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case5]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case0]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case4]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","156","src.test.python","test_endpoints","","","","test_security_employee[case3]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","98","src.test.python","test_endpoints","","","","test_get_all_employees[case2]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:15 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","113","src.test.python","test_endpoints","","","","test_security_employee[case2]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_delete_employee[case1]","
+    Generic DELETE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:15 UTC 2025","Sat Sep 20 14:12:15 UTC 2025","111","src.test.python","test_endpoints","","","","test_security_employee[case1]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_delete_employee[case0]","
+    Generic DELETE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","102","src.test.python","test_endpoints","","","","test_get_employee_by_id[case2]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_update_employee[case1]","
+    Generic UPDATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","103","src.test.python","test_endpoints","","","","test_get_employee_by_id[case3]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","138","src.test.python","test_endpoints","","","","test_get_all_employees[case0]","
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","92","src.test.python","test_endpoints","","","","test_security_employee[case5]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_create_employee[case1]","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Sat Sep 20 14:12:16 UTC 2025","Sat Sep 20 14:12:16 UTC 2025","98","src.test.python","test_endpoints","","","","test_security_employee[case4]","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Sat Sep 20 14:12:17 UTC 2025","Sat Sep 20 14:12:17 UTC 2025","0","src.test.python","test_endpoints","","","","test_generic_update_employee[case0]","
+    Generic UPDATE test for Employee API with dynamic Allure labels and severity.
+    "
