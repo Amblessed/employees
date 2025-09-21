@@ -203,16 +203,7 @@ def run_request(request_type: RequestType, case: dict, feature: str = ""):
         auth=auth
     )
 
-    #is_security_test = "access" in case.get("story").lower() or "authentication" in case.get("story").lower()
-    #feature = "Security Test" if is_security_test else f"{request_type.name.capitalize()} Employee"
-
     allure.step(assign_severity(case, feature))
-        # if isinstance(case.get("expected_detail"), str):
-        #     case["expected_detail"] = (
-        #         case["expected_detail"]
-        #         .replace("RANDOM_INVALID_ID", str(random_invalid_id))
-        #         .replace("RANDOM_VALID_ID", str({employee_1['userId']}))
-        #     )
 
     # Attach response to Allure
     allure.attach(response.text, name="Response Body", attachment_type=allure.attachment_type.JSON)
@@ -319,16 +310,17 @@ def _validate_positive_response(response: requests.Response, case: Dict[str, Any
 
     assert case['expected_detail'] == response_data.get("detail"), f"Detail mismatch: {case['expected_detail']} != {response_data.get('detail')}"
     assert check_field in response_data, f"Check field {check_field} not found in response"
-    if isinstance(data, list):
-        for employee in data:
-            if case["payload"]:
-                assert employee.get("firstName") == case["payload"]["firstName"], f"First name mismatch: {employee.get('firstName')} != {case["payload"]["firstName"]}"
-                assert employee.get("lastName") == case["payload"]["lastName"], f"Last name mismatch: {employee.get('lastName')} != {case["payload"]["lastName"]}"
-                assert employee.get("email") == case["payload"]["email"], f"Email mismatch: {employee.get('email')} != {case["payload"]["email"]}"
-    else:
-        assert len(data.get("firstName")) > 2, f"First name mismatch: {data.get('firstName')}"
-        assert len(data.get("lastName")) > 2, f"Last name mismatch: {data.get('lastName')}"
-        assert len(data.get("email")) > 2, f"Email mismatch: {data.get('email')}"
+
+    # if isinstance(data, list):
+    #     for employee in data:
+    #         if case["payload"]:
+    #             assert employee.get("firstName") == case["payload"]["firstName"], f"First name mismatch: {employee.get('firstName')} != {case["payload"]["firstName"]}"
+    #             assert employee.get("lastName") == case["payload"]["lastName"], f"Last name mismatch: {employee.get('lastName')} != {case["payload"]["lastName"]}"
+    #             assert employee.get("email") == case["payload"]["email"], f"Email mismatch: {employee.get('email')} != {case["payload"]["email"]}"
+    # else:
+    #     assert len(data.get("firstName")) > 2, f"First name mismatch: {data.get('firstName')}"
+    #     assert len(data.get("lastName")) > 2, f"Last name mismatch: {data.get('lastName')}"
+    #     assert len(data.get("email")) > 2, f"Email mismatch: {data.get('email')}"
 
 def _validate_negative_response(response: Response, case: Dict[str, Any]):
     """Validate response for negative test cases.

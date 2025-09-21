@@ -1,0 +1,38 @@
+[
+  {
+    "story": "Employee cannot delete own record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "user_role": "Employee",
+    "access_target": "self",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Manager cannot delete employee record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "user_role": "Manager",
+    "access_target": "other",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Admin can delete employee record",
+    "endpoint": "RANDOM_VALID_ID",
+    "params": {},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": "Employee deleted successfully",
+    "check_field": "detail",
+    "user_role": "Admin",
+    "access_target": "other",
+    "type": "Positive Test"
+  }
+]

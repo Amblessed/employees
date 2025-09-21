@@ -12,8 +12,10 @@ package com.amblessed.employees.repository;
 import com.amblessed.employees.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,13 +30,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     List<Employee> findEmployeeByPosition(String position);
     List<Employee> findByFirstNameOrLastName(String firstName, String lastName);
     Optional<Employee> findByUser_UserId(String employeeId);
-    void deleteByUser_UserId(String employeeId);
     boolean existsByUser_UserId(String userId);
 
-    // define a custom query using JPQL with named params
-
-    @Query("SELECT e FROM Employee e WHERE e.firstName = :firstName and e.lastName = :lastName")
-    Optional<Employee> findByFirstNameAndLastNameNamedParams(@Param("firstName")String firstName, @Param("lastName")String lastName);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Employee e WHERE e.user.userId = :userId")
+    void deleteByEmployeeId(@Param("userId") String userId);
 
     boolean existsByDepartment(String department);
     boolean existsByPosition(String position);

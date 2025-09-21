@@ -74,7 +74,7 @@ public class EmployeeServiceImpl implements EmployeeService{
     @Transactional
     public EmployeeResponse deleteByEmployeeId(String employeeId) {
         EmployeeResponse employee = findByEmployeeId(employeeId);
-        employeeRepository.deleteByUser_UserId(employeeId);
+        employeeRepository.deleteByEmployeeId(employeeId);
         return employee;
     }
 

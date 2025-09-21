@@ -8,7 +8,7 @@ test_cases = load_json_file("testcases.json")
 testcases_get_by_id = load_json_file("get_employee_by_id.json")
 testcases_get_all = load_json_file("get_all_employees.json")
 testcases_get_all_search = load_json_file("get_all_employees_search.json")
-test_cases_delete = load_json_file("testcases_delete.json")
+test_cases_delete = load_json_file("delete_employee_by_id.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 
@@ -154,24 +154,24 @@ def test_generic_update_employee(case):
 
 
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.delete
 @pytest.mark.parametrize("case", test_cases_delete)
 def test_generic_delete_employee(case):
     """
     Generic DELETE test for Employee API with dynamic Allure labels and severity.
     """
-    _, passed_case = run_request(RequestType.DELETE, case)
+    _, passed_case = run_request(RequestType.DELETE, case, feature="Delete Employee By ID")
     print(passed_case)
     if passed_case["type"] == "Negative Test":
         return
     with allure.step("Verify employee no longer exists in the database"):
-        db_result = get_employee_from_db(1)
+        employee_id = passed_case["endpoint"].split("/")[-1]
+        db_result = get_employee_from_db(employee_id)
         allure.attach(str(db_result), name="DB Query Result", attachment_type=allure.attachment_type.TEXT)
-        assert db_result is None, f"Employee {1} still exists in DB"
+        assert db_result is None, f"Employee {employee_id} still exists in DB"
 
-
-
+@pytest.mark.order(1)
+@pytest.mark.getownrecord
 def test_user_can_access_own_record():
     run_request(RequestType.GET, case={}, feature="User Can Access Own Record")
 
