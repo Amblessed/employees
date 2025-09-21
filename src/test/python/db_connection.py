@@ -38,6 +38,20 @@ def get_all_employees_from_db():
         employees = cursor.fetchall()
     return [{"firstName": first, "lastName": last, "email": email} for first, last, email in employees]
 
+def get_all_employees_search_from_db(department: str, position: str, salary: int):
+    """
+    Fetch all employees from the database.
+
+    Returns:
+        list[dict]: A list of dictionaries containing employee details
+        (firstName, lastName, email). Returns an empty list if no employees are found.
+    """
+    query = "SELECT department, position, salary FROM employees WHERE department = %s and position = %s and salary >= %s"
+    with _get_connection() as cursor:
+        cursor.execute(query, (department, position, salary))
+        employees = cursor.fetchall()
+    return [{"department": department, "position": position, "salary": salary} for department, position, salary in employees]
+
 def get_all_emp_ids_from_db():
     """
     Fetch all ids from the database.
@@ -47,7 +61,7 @@ def get_all_emp_ids_from_db():
          Returns an empty list if no ids are found.
     """
     with _get_connection() as cursor:
-        cursor.execute("SELECT employee_id as ID FROM employees")
+        cursor.execute("SELECT user_id as ID FROM employees")
         employees = cursor.fetchall()
 
     return [employee[0] for employee in employees]

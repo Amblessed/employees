@@ -1,0 +1,62 @@
+[
+    {
+      "story": "Manager accesses all employees",
+      "endpoint": "/search",
+      "params": {},
+      "payload": {},
+      "expected_status": 200,
+      "expected_detail": null,
+      "check_field": "employees",
+      "user_role": "Manager",
+      "access_target": "all",
+      "type": "Positive Test"
+    },
+  {
+    "story": "Manager accesses all employees",
+    "endpoint": "/search",
+    "params": {"department": "Product", "position": "Product Owner", "salary": 50000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Manager accesses all employees",
+    "endpoint": "/search",
+    "params": {"department": "Unknown Department", "position": "Unknown Position", "salary": 50000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Admin accesses all employees",
+    "endpoint": "/search",
+    "params": {"department": "Product", "position": "Product Owner", "salary": 50000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Admin",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Employee tries to list all employees",
+    "endpoint": "/search",
+    "params": {"department": "Product", "position": "Product Owner", "salary": 50000},
+    "payload": {},
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "user_role": "Employee",
+    "access_target": "all",
+    "type": "Negative Test"
+  }
+]

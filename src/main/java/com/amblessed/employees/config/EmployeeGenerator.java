@@ -77,14 +77,13 @@ public class EmployeeGenerator {
     }
 
     private static int calculateSalary(String position) {
-        int salary =  switch (position) {
+        return switch (position) {
             case "Senior Software Engineer", "Lead Developer", "Manager" -> randomInt(100000, 150000);
             case "Software Engineer", "Data Scientist", "Data Engineer", "DevOps Engineer" -> randomInt(90000, 120000);
             case "Junior Developer", "Data Analyst" -> randomInt(70000, 90000);
             default -> randomInt(50000, 80000);
         };
-        salary = salary / 1000;
-        return salary * 1000;
+
     }
 
     public static boolean isValidPassword(String password) {

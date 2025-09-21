@@ -17,4 +17,7 @@ public class AppConstants {
     public static final String SORT_BY_LASTNAME = "lastName";
     public static final String SORT_BY_DEPARTMENT = "department";
     public static final String SORT_DIRECTION = "asc";
+    public static final String DEFAULT_SALARY = "50000";
+    public static final String DEFAULT_POSITION = "Test Automation Engineer";
+    public static final String DEFAULT_DEPARTMENT = "Engineering";
 }

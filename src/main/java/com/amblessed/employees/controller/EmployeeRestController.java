@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -44,18 +43,15 @@ public class EmployeeRestController {
     private final EmployeeService employeeService;
 
     @Operation(summary = "Get all employees", description = "Only managers can fetch paginated employees")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Employees fetched successfully"),
-            @ApiResponse(responseCode = "403", description = "Unauthorized")
-    })
+    @ApiResponse(responseCode = "200", description = "Employees fetched successfully")
+    @ApiResponse(responseCode = "403", description = "Unauthorized")
     @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("@employeeSecurity.isAdminOrManager(authentication)")
     public ResponseEntity<Map<String, Object>> findAllEmployees(
             @RequestParam(defaultValue = AppConstants.PAGE) Integer page,
             @RequestParam(defaultValue = AppConstants.SIZE) Integer size,
             @RequestParam(defaultValue = AppConstants.SORT_BY_FIRSTNAME) String sortBy,
-            @RequestParam(defaultValue = AppConstants.SORT_DIRECTION) String direction,
-            Authentication authentication
+            @RequestParam(defaultValue = AppConstants.SORT_DIRECTION) String direction
     ) {
         Page<EmployeeResponse> employees = employeeService.findAll(page, size, sortBy, direction);
 
@@ -73,9 +69,10 @@ public class EmployeeRestController {
         return ResponseEntity.ok(response);
     }
 
+
     @Operation(summary = "Get employee by ID", description = "Self-access or managers/admins only")
     @GetMapping("/id/{employeeId}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER') or @employeeSecurity.isSelfByEmployeeId(#employeeId, authentication)")
+    @PreAuthorize("@employeeSecurity.isAdminOrManagerOrSelf(authentication, #employeeId)")
     public ResponseEntity<Map<String, Object>> findByEmployeeId(@PathVariable String employeeId) {
         EmployeeResponse employee = employeeService.findByEmployeeId(employeeId);
         Map<String, Object> response = Map.of(
@@ -85,13 +82,14 @@ public class EmployeeRestController {
         return ResponseEntity.ok(response);
     }
 
+
     @Operation(summary = "Search employees", description = "Managers/Admins can search by department, position or salary")
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('MANAGER')")
+    @PreAuthorize("@employeeSecurity.isAdminOrManager(authentication)")
     public ResponseEntity<Map<String, Object>> searchEmployees(
-            @RequestParam(required = false) String department,
-            @RequestParam(required = false) String position,
-            @RequestParam(required = false) BigDecimal salary
+            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_DEPARTMENT) String department,
+            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_POSITION) String position,
+            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_SALARY) BigDecimal salary
     ) {
         List<EmployeeResponse> results = employeeService.filterEmployees(department, position, salary);
         Map<String, Object> response = Map.of(
@@ -101,9 +99,10 @@ public class EmployeeRestController {
         return ResponseEntity.ok(response);
     }
 
+
     @Operation(summary = "Export employees as JSON", description = "Admins/managers can export filtered list")
     @GetMapping("/download")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PreAuthorize("@employeeSecurity.isAdminOrManager(authentication)")
     public ResponseEntity<byte[]> exportEmployees(
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String position,
@@ -129,7 +128,7 @@ public class EmployeeRestController {
 
     @Operation(summary = "Update employee", description = "Self or manager-only update")
     @PutMapping("/id/{employeeId}")
-    @PreAuthorize("hasRole('MANAGER') or @employeeSecurity.isSelfByEmployeeId(#employeeId, authentication)")
+    @PreAuthorize("@employeeSecurity.isAdminOrManagerOrSelf(authentication, #employeeId)")
     public ResponseEntity<Map<String, Object>> updateEmployee(
             @Valid @RequestBody EmployeeRequest employeeRequest,
             @PathVariable String employeeId
@@ -147,7 +146,8 @@ public class EmployeeRestController {
 
     @Operation(summary = "Create employee", description = "Only admins can create new employees")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@employeeSecurity.isAdmin(authentication)")
     public ResponseEntity<Map<String, Object>> createEmployee(
             @Valid @RequestBody EmployeeRequest employeeRequest
     ) {
@@ -161,7 +161,7 @@ public class EmployeeRestController {
 
     @Operation(summary = "Delete employee", description = "Only admins can delete employee records")
     @DeleteMapping("/id/{employeeId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@employeeSecurity.isAdmin(authentication)")
     public ResponseEntity<Map<String, Object>> deleteEmployee(@PathVariable String employeeId) {
         EmployeeResponse deleted = employeeService.deleteByEmployeeId(employeeId);
         Map<String, Object> response = Map.of(

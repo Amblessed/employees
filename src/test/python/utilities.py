@@ -123,8 +123,6 @@ def run_request(request_type: RequestType, case: dict):
 
     users_data = get_all_users()
 
-
-
     if case == {}:
         allure_list = []
         for user_id,details in users_data.items():
@@ -168,9 +166,6 @@ def run_request(request_type: RequestType, case: dict):
     url = f"{BASE_URL}{case.get('endpoint', '')}"
     auth = HTTPBasicAuth(case.get("user"), case.get("password"))
 
-
-    print(f"Params: {case["params"]}")
-
     response = requests.request(
         method=request_type.value,
         url=url,
@@ -185,10 +180,11 @@ def run_request(request_type: RequestType, case: dict):
 
     # Print debug info
     print("\n============================== REQUEST ==============================")
-    print(actor)
-    print(target)
+    print(f"Actor: {actor}")
+    print(f"Target: {target}")
     print(f"Actor: {actor['userId']} ({actor['role']})")
     print(f"Target: {target['userId'] if target else 'ALL'}")
+    print(f"Params: {case["params"]}")
     print(f"URL: {url}")
     print(f"Method: {request_type.name}")
     print(f"Response: {response.status_code} {response.text}")

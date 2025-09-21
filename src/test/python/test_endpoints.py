@@ -2,15 +2,14 @@
 import pytest
 import allure
 from utilities import load_json_file, run_request, RequestType
-from db_connection import get_employee_from_db, get_all_employees_from_db
-
+from db_connection import get_employee_from_db, get_all_employees_from_db, get_all_employees_search_from_db
 
 test_cases = load_json_file("testcases.json")
 testcases_get_by_id = load_json_file("get_employee_by_id.json")
 testcases_get_all = load_json_file("get_all_employees.json")
+testcases_get_all_search = load_json_file("get_all_employees_search.json")
 test_cases_delete = load_json_file("testcases_delete.json")
 test_cases_security = load_json_file("testcases_security.json")
-# users_data = load_json_file("user_details.json")
 
 
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
@@ -62,10 +61,53 @@ def test_get_all_employees(case):
         return
     employees = response_json.get("employees")
     assert employees is not None, "Response should contain 'employees' key"
-    assert isinstance(employees, list)
+    assert isinstance(employees, list), "'employees' should be a list"
 
     page_size = int(case["params"]["size"]) if case.get("params") else case["size"]
     assert len(employees) == page_size, "Get All Employees test failed"
+
+
+# ------------------- GENERIC GET ALL EMPLOYEES BY SEARCH TEST WITH SEVERITY -------------------
+@pytest.mark.getallsearch
+@pytest.mark.parametrize("case", testcases_get_all_search)
+def test_get_all_employees_by_search(case):
+    """
+    Generic GET test for Employees API with dynamic Allure labels and severity.
+    """
+    response, case = run_request(RequestType.GET, case)
+    response_body = response.json()
+    if case.get("type") == "Negative Test":
+        assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
+        assert response_body.get("detail") == case.get("expected_detail"), "Get All Employees test failed"
+        return
+
+
+    employees = response_body.get("employees")
+    assert employees is not None, "Response should contain 'employees' key"
+    assert isinstance(employees, list), "'employees' should be a list"
+
+    params = case.get("params") or {}
+    expected_department = params.get("department", "Engineering")
+    expected_position = params.get("position", "Test Automation Engineer")
+    expected_salary = params.get("salary", 50000)
+
+    # Assert all employees match expected values
+    assert all(emp.get("department") == expected_department and emp.get("position") == expected_position for emp in employees), \
+        "One or more employees do not match expected department or position"
+
+    # Validate API response employees
+    mismatched_employees = [
+        emp for emp in employees
+        if emp.get("department") != expected_department or emp.get("position") != expected_position or emp.get("salary") < expected_salary
+    ]
+    assert not mismatched_employees, f"Employees with mismatched department or position or salary: {mismatched_employees}"
+
+    # Validate DB results
+    database_result = get_all_employees_search_from_db(expected_department, expected_position, expected_salary)
+    for employee in database_result:
+        assert employee.get("department") == expected_department, f"Department mismatch: {employee}"
+        assert employee.get("position") == expected_position, f"Position mismatch: {employee}"
+        assert employee.get("salary") >= expected_salary, f"Salary below expected: {employee}"
 
 
 
