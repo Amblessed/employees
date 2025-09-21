@@ -87,6 +87,34 @@ def categorize_users(data: Dict[str, Dict[str, str]]) -> Tuple[List[Dict], List[
             admins.append(user_dict)
     return employees, managers, admins
 
+def assign_severity(case: Dict, feature: str) -> str:
+    """Assign severity level based on test case type."""
+    is_positive_test = case["type"] == "Positive Test"
+    severity = allure.severity_level.NORMAL if is_positive_test else allure.severity_level.CRITICAL
+    badge = "✅" if case["type"] == "Positive Test" else "❌"
+
+    # Dynamic labels for Allure
+    allure.dynamic.feature(feature)
+    allure.dynamic.story(case["story"])
+    allure.dynamic.title(case["story"].replace(" ", "_").lower())
+    allure.dynamic.severity(severity)
+
+    step_title = (
+        f"{badge} {case['type']}: {case['story']} | "
+        f"Endpoint={case['endpoint']} | Params={case['params'] or 'None'} | "
+        f"Expected Status={case['expected_status']}"
+    )
+
+    return step_title
+
+
+def attach_response_body(response: requests.Response):
+    allure.attach(
+        response.text,
+        name="Response Body",
+        attachment_type=allure.attachment_type.JSON
+    )
+
 
 # ---------------------------
 # Core Functionality
@@ -115,7 +143,7 @@ def get_all_users() -> Dict:
     return users_data
 
 
-def run_request(request_type: RequestType, case: dict):
+def run_request(request_type: RequestType, case: dict, feature: str = ""):
     """
     Run an API request using employee details from user_details.json.
     Handles role-based access, self vs other targets, and placeholder replacement.
@@ -175,18 +203,26 @@ def run_request(request_type: RequestType, case: dict):
         auth=auth
     )
 
+    #is_security_test = "access" in case.get("story").lower() or "authentication" in case.get("story").lower()
+    #feature = "Security Test" if is_security_test else f"{request_type.name.capitalize()} Employee"
+
+    allure.step(assign_severity(case, feature))
+        # if isinstance(case.get("expected_detail"), str):
+        #     case["expected_detail"] = (
+        #         case["expected_detail"]
+        #         .replace("RANDOM_INVALID_ID", str(random_invalid_id))
+        #         .replace("RANDOM_VALID_ID", str({employee_1['userId']}))
+        #     )
+
     # Attach response to Allure
     allure.attach(response.text, name="Response Body", attachment_type=allure.attachment_type.JSON)
 
     # Print debug info
     print("\n============================== REQUEST ==============================")
-    print(f"Actor: {actor}")
-    print(f"Target: {target}")
     print(f"Actor: {actor['userId']} ({actor['role']})")
     print(f"Target: {target['userId'] if target else 'ALL'}")
     print(f"Params: {case["params"]}")
     print(f"URL: {url}")
-    print(f"Method: {request_type.name}")
     print(f"Response: {response.status_code} {response.text}")
     print("=====================================================================\n")
 
@@ -230,6 +266,25 @@ def _print_response(response):
         print(json.dumps(response.json(), indent=4, sort_keys=True))
     except JSONDecodeError:
         print(response.text)
+
+def validate_employees(employees, expected_values, source="API/DB"):
+    """
+    Validates a list of employee dictionaries against expected values dynamically.
+
+    Args:
+        employees (list): List of employee dictionaries to validate.
+        expected_values (dict): Dictionary of expected key-value pairs.
+        source (str): Source of data for assertion messages (API/DB).
+    """
+    for emp in employees:
+        for key, expected_value in expected_values.items():
+            actual_value = emp.get(key)
+            if key == "salary":  # Special handling for salary >= expected
+                assert actual_value >= expected_value, f"{source} - Salary below expected: {emp}"
+            else:
+                if expected_value == "":
+                    continue
+                assert actual_value == expected_value, f"{source} - {key} mismatch: {emp}"
 
 
 def validate_response(response: requests.Response, case: Dict[str, Any]):
@@ -286,6 +341,8 @@ def _validate_negative_response(response: Response, case: Dict[str, Any]):
     if not response_body:
         return
     assert case['expected_detail'] == response_body.get("detail"), f"Detail mismatch for {case}"
+
+
 
 
 if __name__ == "__main__":

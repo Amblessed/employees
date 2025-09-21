@@ -49,9 +49,15 @@ public class EmployeeServiceImpl implements EmployeeService{
     public List<EmployeeResponse> filterEmployees(String department, String position, BigDecimal salary) {
         Specification<Employee> spec = null;
         if (department != null) {
+            if (!existsByDepartment(department)) {
+                throw new ResourceNotFoundException(String.format("%s Department not found", department));
+            }
             spec = EmployeeSpecification.hasDepartment(department);
         }
         if (position != null) {
+            if (!existsByPosition(position)) {
+                throw new ResourceNotFoundException("Position not found with position: " + position);
+            }
             spec = (spec == null) ? EmployeeSpecification.hasPosition(position)
                     : spec.and(EmployeeSpecification.hasPosition(position));
         }
@@ -96,6 +102,16 @@ public class EmployeeServiceImpl implements EmployeeService{
         Employee employee = employeeRepository.findByUser_UserId(employeeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with employeeId: " + employeeId));
         return mapToResponse(employee);
+    }
+
+    @Override
+    public boolean existsByDepartment(String department) {
+        return employeeRepository.existsByDepartment((department));
+    }
+
+    @Override
+    public boolean existsByPosition(String position) {
+        return employeeRepository.existsByPosition(position);
     }
 
 

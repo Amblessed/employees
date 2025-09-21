@@ -36,4 +36,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
     @Query("SELECT e FROM Employee e WHERE e.firstName = :firstName and e.lastName = :lastName")
     Optional<Employee> findByFirstNameAndLastNameNamedParams(@Param("firstName")String firstName, @Param("lastName")String lastName);
 
+    boolean existsByDepartment(String department);
+    boolean existsByPosition(String position);
 }

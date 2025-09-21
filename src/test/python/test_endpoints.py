@@ -1,7 +1,7 @@
 
 import pytest
 import allure
-from utilities import load_json_file, run_request, RequestType
+from utilities import load_json_file, run_request, RequestType, validate_employees
 from db_connection import get_employee_from_db, get_all_employees_from_db, get_all_employees_search_from_db
 
 test_cases = load_json_file("testcases.json")
@@ -12,6 +12,10 @@ test_cases_delete = load_json_file("testcases_delete.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 
+
+
+
+
 # ------------------- GENERIC SECURITY TEST WITH SEVERITY -------------------
 @pytest.mark.security
 @pytest.mark.parametrize("case", test_cases_security)
@@ -19,7 +23,7 @@ def test_security_employee(case):
     """
     Generic SECURITY test for Employee API with dynamic Allure labels and severity.
     """
-    run_request(RequestType(case["method"]), case)
+    run_request(RequestType(case["method"]), case, feature="Security Test")
 
 # ------------------- GENERIC GET TEST WITH SEVERITY -------------------
 @pytest.mark.get
@@ -28,7 +32,7 @@ def test_get_employee_by_id(case):
     """
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
-    response, case = run_request(RequestType.GET, case)
+    response, case = run_request(RequestType.GET, case, feature="Get Employee By ID")
     response_json = response.json()
 
     # Case: Get employee by ID
@@ -53,7 +57,7 @@ def test_get_all_employees(case):
     """
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
-    response, case = run_request(RequestType.GET, case)
+    response, case = run_request(RequestType.GET, case, feature="Get All Employees")
     response_json = response.json()
     if case.get("type") == "Negative Test":
         assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
@@ -74,7 +78,7 @@ def test_get_all_employees_by_search(case):
     """
     Generic GET test for Employees API with dynamic Allure labels and severity.
     """
-    response, case = run_request(RequestType.GET, case)
+    response, case = run_request(RequestType.GET, case, feature="Get All Employees By Search")
     response_body = response.json()
     if case.get("type") == "Negative Test":
         assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
@@ -86,28 +90,24 @@ def test_get_all_employees_by_search(case):
     assert employees is not None, "Response should contain 'employees' key"
     assert isinstance(employees, list), "'employees' should be a list"
 
+    # Prepare expected values with defaults
     params = case.get("params") or {}
-    expected_department = params.get("department", "Engineering")
-    expected_position = params.get("position", "Test Automation Engineer")
-    expected_salary = params.get("salary", 50000)
+    expected_values = {
+        "department": params.get("department", ""),
+        "position": params.get("position", ""),
+        "salary": params.get("salary", 50000)
+    }
 
-    # Assert all employees match expected values
-    assert all(emp.get("department") == expected_department and emp.get("position") == expected_position for emp in employees), \
-        "One or more employees do not match expected department or position"
-
-    # Validate API response employees
-    mismatched_employees = [
-        emp for emp in employees
-        if emp.get("department") != expected_department or emp.get("position") != expected_position or emp.get("salary") < expected_salary
-    ]
-    assert not mismatched_employees, f"Employees with mismatched department or position or salary: {mismatched_employees}"
+    # Validate API response
+    validate_employees(employees, expected_values, source="API")
 
     # Validate DB results
-    database_result = get_all_employees_search_from_db(expected_department, expected_position, expected_salary)
-    for employee in database_result:
-        assert employee.get("department") == expected_department, f"Department mismatch: {employee}"
-        assert employee.get("position") == expected_position, f"Position mismatch: {employee}"
-        assert employee.get("salary") >= expected_salary, f"Salary below expected: {employee}"
+    database_result = get_all_employees_search_from_db(
+        expected_values.get("department"),
+        expected_values.get("position"),
+        expected_values.get("salary")
+    )
+    validate_employees(database_result, expected_values, source="DB")
 
 
 
@@ -173,7 +173,7 @@ def test_generic_delete_employee(case):
 
 
 def test_user_can_access_own_record():
-    run_request(RequestType.GET, case={})
+    run_request(RequestType.GET, case={}, feature="User Can Access Own Record")
 
 
 

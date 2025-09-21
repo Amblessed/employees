@@ -29,4 +29,6 @@ public interface EmployeeService {
     List<EmployeeResponse> filterEmployees(String department, String position, BigDecimal salary);
     List<EmployeeResponse> exportEmployees(String department, String position, BigDecimal salary);
     EmployeeResponse findByEmployeeId(String employeeId);
+    boolean existsByDepartment(String department);
+    boolean existsByPosition(String position);
 }

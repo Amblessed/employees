@@ -87,8 +87,8 @@ public class EmployeeRestController {
     @GetMapping("/search")
     @PreAuthorize("@employeeSecurity.isAdminOrManager(authentication)")
     public ResponseEntity<Map<String, Object>> searchEmployees(
-            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_DEPARTMENT) String department,
-            @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_POSITION) String position,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String position,
             @RequestParam(required = false, defaultValue = AppConstants.DEFAULT_SALARY) BigDecimal salary
     ) {
         List<EmployeeResponse> results = employeeService.filterEmployees(department, position, salary);

@@ -1,20 +1,8 @@
 [
-    {
-      "story": "Manager accesses all employees",
-      "endpoint": "/search",
-      "params": {},
-      "payload": {},
-      "expected_status": 200,
-      "expected_detail": null,
-      "check_field": "employees",
-      "user_role": "Manager",
-      "access_target": "all",
-      "type": "Positive Test"
-    },
   {
-    "story": "Manager accesses all employees",
+    "story": "Manager accesses all employees with department param",
     "endpoint": "/search",
-    "params": {"department": "Product", "position": "Product Owner", "salary": 50000},
+    "params": {"department": "Engineering"},
     "payload": {},
     "expected_status": 200,
     "expected_detail": null,
@@ -24,9 +12,9 @@
     "type": "Positive Test"
   },
   {
-    "story": "Manager accesses all employees",
+    "story": "Manager accesses all employees with position param",
     "endpoint": "/search",
-    "params": {"department": "Unknown Department", "position": "Unknown Position", "salary": 50000},
+    "params": {"position": "Operations Manager"},
     "payload": {},
     "expected_status": 200,
     "expected_detail": null,
@@ -36,9 +24,57 @@
     "type": "Positive Test"
   },
   {
-    "story": "Admin accesses all employees",
+    "story": "Manager accesses all employees with salary param",
     "endpoint": "/search",
-    "params": {"department": "Product", "position": "Product Owner", "salary": 50000},
+    "params": {"salary": 80000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Manager accesses all employees with valid department and invalid position param",
+    "endpoint": "/search",
+    "params": {"department": "Operations", "position": "Software Engineer"},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Manager accesses all employees with valid params",
+    "endpoint": "/search",
+    "params": {"department": "Product", "position": "Product Owner", "salary": 70000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Manager accesses all employees with unknown params",
+    "endpoint": "/search",
+    "params": {"department": "Unknown", "position": "Unknown", "salary": 40000},
+    "payload": {},
+    "expected_status": 404,
+    "expected_detail": "Unknown Department not found",
+    "check_field": "detail",
+    "user_role": "Manager",
+    "access_target": "all",
+    "type": "Negative Test"
+  },
+  {
+    "story": "Admin accesses all employees with department param",
+    "endpoint": "/search",
+    "params": {"department": "Finance"},
     "payload": {},
     "expected_status": 200,
     "expected_detail": null,
@@ -46,6 +82,42 @@
     "user_role": "Admin",
     "access_target": "all",
     "type": "Positive Test"
+  },
+  {
+    "story": "Admin accesses all employees with position param",
+    "endpoint": "/search",
+    "params": {"position": "Test Automation Engineer"},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Admin",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Admin accesses all employees with valid params",
+    "endpoint": "/search",
+    "params": {"department": "Product", "position": "Product Owner", "salary": 60000},
+    "payload": {},
+    "expected_status": 200,
+    "expected_detail": null,
+    "check_field": "employees",
+    "user_role": "Admin",
+    "access_target": "all",
+    "type": "Positive Test"
+  },
+  {
+    "story": "Admin accesses all employees with unknown params",
+    "endpoint": "/search",
+    "params": {"department": "Unknown", "position": "Unknown", "salary": -500000},
+    "payload": {},
+    "expected_status": 404,
+    "expected_detail": "Unknown Department not found",
+    "check_field": "detail",
+    "user_role": "Admin",
+    "access_target": "all",
+    "type": "Negative Test"
   },
   {
     "story": "Employee tries to list all employees",
