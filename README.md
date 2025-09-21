@@ -11,7 +11,7 @@ The Employees REST API demonstrates how to integrate **Java (Spring Boot + Sprin
 
 This application provides a RESTful API for managing employee records, including CRUD operations (Create, Read, Update, Delete). It leverages:
 
-- **Backend**: Java, Spring Boot with Spring Data JPA and Spring Security  
+- **Backend**: Java, Spring Boot with Spring Data JPA and Spring Security(basic role-based access)  
 - **Database**: PostgreSQL  
 - **Testing**: Python, Pytest for comprehensive REST API endpoint testing
 - **Testcase**: JSON format
