@@ -101,11 +101,4 @@ public class EmployeeSecurity {
         return authentication == null || !authentication.isAuthenticated();
     }
 
-    // Check if the authenticated user is accessing their own record
-    /*public boolean isSelfByEmployeeId(String employeeId, Authentication authentication) {
-        String userID = authentication.getName(); // username/email
-        log.info("UserID: {},  Employee ID: {}, Authorities: {}", userID, employeeId, authentication.getAuthorities());
-        EmployeeResponse employee = employeeService.findByEmployeeId(userID);
-        return employee != null && Objects.equals(employee.getEmployeeId(), employeeId);
-    }*/
 }

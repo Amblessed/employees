@@ -115,7 +115,7 @@ def test_get_all_employees_by_search(case):
 @pytest.mark.skip(reason="Not implemented")
 @pytest.mark.create
 @pytest.mark.parametrize("case", test_cases.get("POST"))
-def test_generic_create_employee(case):
+def test_create_employee(case):
     """
     Generic CREATE test for Employee API with dynamic Allure labels and severity.
     """
@@ -132,7 +132,7 @@ def test_generic_create_employee(case):
 @pytest.mark.skip(reason="Not implemented")
 @pytest.mark.put
 @pytest.mark.parametrize("case", test_cases.get("PUT"))
-def test_generic_update_employee(case):
+def test_update_employee(case):
     """
     Generic UPDATE test for Employee API with dynamic Allure labels and severity.
     """
@@ -156,7 +156,7 @@ def test_generic_update_employee(case):
 # ------------------- GENERIC DELETE EMPLOYEE TEST WITH SEVERITY -------------------
 @pytest.mark.delete
 @pytest.mark.parametrize("case", test_cases_delete)
-def test_generic_delete_employee(case):
+def test_delete_employee(case):
     """
     Generic DELETE test for Employee API with dynamic Allure labels and severity.
     """
@@ -172,8 +172,15 @@ def test_generic_delete_employee(case):
 
 @pytest.mark.order(1)
 @pytest.mark.getownrecord
-def test_user_can_access_own_record():
+def test_employees_can_access_own_record():
     run_request(RequestType.GET, case={}, feature="User Can Access Own Record")
+
+    # Dynamic labels for Allure
+    allure.dynamic.feature("Employees can access their own personal records")
+    # allure.dynamic.story("Employees can access their own record")
+    allure.dynamic.title("Employees can access their own record".replace(" ", "_").lower())
+    allure.dynamic.severity(allure.severity_level.NORMAL)
+
 
 
 

@@ -1,5 +1,4 @@
 import subprocess
-import json
 import pytest
 import os, shutil, sys
 import socket
@@ -213,12 +212,3 @@ def wait_for_seeder_json(timeout=60):
                 return
         time.sleep(POLL_INTERVAL)
     raise FileNotFoundError(f"{USER_DETAILS_FILE} not freshly updated after {timeout} seconds")
-
-# def pytest_generate_tests(metafunc):
-#     # only parametrize after spring boot & seeder are ready
-#     if "user_id" in metafunc.fixturenames and "details" in metafunc.fixturenames:
-#         wait_for_seeder_json(timeout=300)
-#         with USER_DETAILS_FILE.open(encoding="utf-8") as f:
-#             user_details = json.load(f)
-#         ids = list(user_details.keys())
-#         metafunc.parametrize("user_id,details", user_details.items(), ids=ids)
