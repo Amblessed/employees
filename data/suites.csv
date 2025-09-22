@@ -1,0 +1,98 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","100","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_salary_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","105","src.test.python","test_endpoints","","","","admin_accesses_all_employees","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","101","src.test.python","test_endpoints","","","","admin_accesses_all_employees_with_department_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","90","src.test.python","test_endpoints","","","","access_denied","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","103","src.test.python","test_endpoints","","","","admin_tries_to_create_employee_with_incomplete_request_body","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","92","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_unknown_params","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:01 UTC 2025","Mon Sep 22 15:38:01 UTC 2025","110","src.test.python","test_endpoints","","","","admin_can_delete_employee_record","
+    Generic DELETE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","91","src.test.python","test_endpoints","","","","employee_accesses_own_record","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","120","src.test.python","test_endpoints","","","","employee_tries_to_access_another_employee","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"failed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","194","src.test.python","test_endpoints","","","","access_denied","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:01 UTC 2025","90","src.test.python","test_endpoints","","","","employee_cannot_delete_own_record","
+    Generic DELETE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","99","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_valid_params","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","92","src.test.python","test_endpoints","","","","employee_tries_to_access_create_employee_endpoint","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","97","src.test.python","test_endpoints","","","","admin_accesses_all_employees_with_position_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","89","src.test.python","test_endpoints","","","","employee_tries_to_list_all_employees","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:12 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","45404","src.test.python","test_endpoints","","","","employees_can_access_their_own_record",""
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","119","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_department_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"skipped","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","0","src.test.python","test_endpoints","","","","test_update_employee[case1]","
+    Generic UPDATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","96","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_valid_department_and_invalid_position_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","91","src.test.python","test_endpoints","","","","manager_tries_to_access_create_employee_endpoint","
+    Generic CREATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","104","src.test.python","test_endpoints","","","","manager_accesses_all_employees_with_position_param","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","91","src.test.python","test_endpoints","","","","admin_accesses_a_specific_employee","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","90","src.test.python","test_endpoints","","","","employee_tries_to_list_all_employees","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","162","src.test.python","test_endpoints","","","","manager_accesses_all_employees","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","92","src.test.python","test_endpoints","","","","employee_accesses_own_record","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","90","src.test.python","test_endpoints","","","","access_denied","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:58 UTC 2025","Mon Sep 22 15:37:58 UTC 2025","94","src.test.python","test_endpoints","","","","manager_accesses_a_specific_employee","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","97","src.test.python","test_endpoints","","","","admin_accesses_all_employees_with_valid_params","
+    Unified GET tests: by_id, get_all, and search.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","126","src.test.python","test_endpoints","","","","access_denied","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"skipped","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","0","src.test.python","test_endpoints","","","","test_update_employee[case0]","
+    Generic UPDATE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:38:00 UTC 2025","Mon Sep 22 15:38:00 UTC 2025","89","src.test.python","test_endpoints","","","","access_granted","
+    Generic SECURITY test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:38:01 UTC 2025","Mon Sep 22 15:38:01 UTC 2025","88","src.test.python","test_endpoints","","","","manager_cannot_delete_employee_record","
+    Generic DELETE test for Employee API with dynamic Allure labels and severity.
+    "
+"passed","Mon Sep 22 15:37:59 UTC 2025","Mon Sep 22 15:37:59 UTC 2025","90","src.test.python","test_endpoints","","","","admin_accesses_all_employees_with_unknown_params","
+    Unified GET tests: by_id, get_all, and search.
+    "
