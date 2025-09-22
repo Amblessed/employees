@@ -62,7 +62,6 @@ Each role has distinct access privileges, and tests are designed to verify both 
 ## 📊 Reporting & Coverage
 
 - **Allure Reports**: Visual test results with story, severity, and traceability
-- **JaCoCo**: Code coverage for Java service and controller layers
 - **Test Logs**: Request/response traces for debugging and audit
 
 ---
@@ -75,7 +74,7 @@ Each role has distinct access privileges, and tests are designed to verify both 
 
 ---
 
-## 🔄 CI/CD Integration (Optional)
+## 🔄 CI/CD Integration
 
 - GitHub Actions or GitLab CI for automated test runs
 - Allure report publishing
@@ -88,9 +87,9 @@ Each role has distinct access privileges, and tests are designed to verify both 
 | Story                                | Role     | Expected Status | Type           |
 |--------------------------------------|----------|------------------|----------------|
 | Manager accesses all employees       | Manager  | 200 OK           | Positive Test  |
-| Employee tries to list all employees | Employee | 403 Forbidden     | Negative Test  |
+| Employee tries to list all employees | Employee | 403 Forbidden    | Negative Test  |
 | Admin deletes employee               | Admin    | 200 OK           | Positive Test  |
-| Inactive user tries to access data   | Employee | 403 Forbidden     | Negative Test  |
+| Inactive user tries to access data   | Employee | 403 Forbidden    | Negative Test  |
 
 ---
 
