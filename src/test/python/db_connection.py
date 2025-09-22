@@ -1,70 +1,71 @@
-import psycopg2
-from psycopg2.extras import DictCursor
 import os
+from psycopg2 import pool
+from psycopg2.extras import DictCursor
+
+# Initialize connection pool
+# Use a connection pool instead of reconnecting on every call. psycopg2.pool.SimpleConnectionPool handles this.
+db_pool = pool.SimpleConnectionPool(
+    minconn=1,
+    maxconn=5,
+    dbname="employeeDB",
+    user=os.getenv("POSTGRESQL_USERNAME"),
+    password=os.getenv("POSTGRESQL_PASSWORD"),
+    host="localhost",
+    port="5432",
+)
 
 
-def _get_connection():
+def _fetch(query: str, params: tuple = None, fetchone: bool = False):
+    conn = db_pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query, params or ())
+            return cursor.fetchone() if fetchone else cursor.fetchall()
+    finally:
+        db_pool.putconn(conn)
 
-    # Establish connection
-    conn = psycopg2.connect(
-        dbname="employeeDB",
-        user=os.getenv("POSTGRESQL_USERNAME"),
-        password=os.getenv("POSTGRESQL_PASSWORD"),
-        host="localhost",
-        port="5432"  # default PostgreSQL port
+
+def normalize_keys(d: dict) -> dict:
+    """
+    Convert lowercase keys to camelCase equivalents if needed.
+    """
+    key_map = {
+        "firstname": "firstName",
+        "lastname": "lastName",
+        "email": "email"  # keep as-is
+    }
+    return {key_map.get(k, k): v for k, v in d.items()}
+
+
+
+def get_employee_from_db(employee_id: str):
+    row = _fetch(
+        "SELECT first_name AS firstName, last_name AS lastName, email "
+        "FROM employees WHERE user_id = %s",
+        (employee_id,),
+        fetchone=True,
     )
+    return normalize_keys(dict(row)) if row else None
 
-    # Create a cursor and return it
-    conn.autocommit = True
-    return conn.cursor(cursor_factory=DictCursor)
-
-
-def get_employee_from_db(employee_id):
-     with _get_connection() as cursor:
-         cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees WHERE user_id = %s", (employee_id,))
-         employee = cursor.fetchone()
-     return {"firstName": employee[0], "lastName": employee[1], "email": employee[2]} if employee else None
 
 def get_all_employees_from_db():
-    """
-    Fetch all employees from the database.
+    rows = _fetch("SELECT first_name AS firstName, last_name AS lastName, email FROM employees")
+    return [dict(r) for r in rows]
 
-    Returns:
-        list[dict]: A list of dictionaries containing employee details
-        (firstName, lastName, email). Returns an empty list if no employees are found.
-    """
-    with _get_connection() as cursor:
-        cursor.execute("SELECT first_name as firstName, last_name as lastName, email FROM employees")
-        employees = cursor.fetchall()
-    return [{"firstName": first, "lastName": last, "email": email} for first, last, email in employees]
 
 def get_all_employees_search_from_db(department: str, position: str, salary: int):
-    """
-    Fetch all employees from the database.
+    rows = _fetch(
+        "SELECT department, position, salary FROM employees "
+        "WHERE department = %s AND position = %s AND salary >= %s",
+        (department, position, salary),
+    )
+    return [dict(r) for r in rows]
 
-    Returns:
-        list[dict]: A list of dictionaries containing employee details
-        (firstName, lastName, email). Returns an empty list if no employees are found.
-    """
-    query = "SELECT department, position, salary FROM employees WHERE department = %s and position = %s and salary >= %s"
-    with _get_connection() as cursor:
-        cursor.execute(query, (department, position, salary))
-        employees = cursor.fetchall()
-    return [{"department": department, "position": position, "salary": salary} for department, position, salary in employees]
 
 def get_all_emp_ids_from_db():
-    """
-    Fetch all ids from the database.
+    rows = _fetch("SELECT user_id AS id FROM employees")
+    return [r["id"] for r in rows]
 
-    Returns:
-        list[dict]: A list of ids
-         Returns an empty list if no ids are found.
-    """
-    with _get_connection() as cursor:
-        cursor.execute("SELECT user_id as ID FROM employees")
-        employees = cursor.fetchall()
-
-    return [employee[0] for employee in employees]
 
 if __name__ == "__main__":
     print(get_all_emp_ids_from_db())

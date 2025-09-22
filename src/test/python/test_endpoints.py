@@ -12,7 +12,73 @@ test_cases_delete = load_json_file("delete_employee_by_id.json")
 test_cases_security = load_json_file("testcases_security.json")
 
 
+# Merge test data with scenario labels
+all_get_cases = [
+    *[(case | {"scenario": "by_id"}) for case in testcases_get_by_id],
+    *[(case | {"scenario": "get_all"}) for case in testcases_get_all],
+    *[(case | {"scenario": "search"}) for case in testcases_get_all_search],
+]
 
+
+# ------------------- HELPERS -------------------
+def assert_negative(response, case, feature):
+    response_json = response.json()
+    assert response.status_code == case["expected_status"], f"{feature} failed"
+    assert response_json.get("detail") == case["expected_detail"], f"{feature} failed"
+
+
+def extract_employee_id(endpoint: str) -> str:
+    return endpoint.split("/")[-1]
+
+
+# ------------------- UNIFIED GET TEST -------------------
+@pytest.mark.get
+@pytest.mark.parametrize("case", all_get_cases)
+def test_get_employees(case):
+    """
+    Unified GET tests: by_id, get_all, and search.
+    """
+    scenario = case["scenario"]
+    response, case = run_request(RequestType.GET, case, feature=f"Get Employees - {scenario}")
+    response_json = response.json()
+
+    if case["type"] == "Negative Test":
+        assert_negative(response, case, f"Get Employees - {scenario}")
+        return
+
+    # Scenario-specific validations
+    if scenario == "by_id":
+        employee_id = extract_employee_id(case["endpoint"])
+        db_employee = get_employee_from_db(employee_id)
+        api_employee = response_json.get("employee")
+        for key in ["firstName", "lastName", "email"]:
+            assert api_employee.get(key) == db_employee.get(key), f"Mismatch on {key}"
+
+    elif scenario == "get_all":
+        employees = response_json.get("employees")
+        assert isinstance(employees, list), "'employees' must be a list"
+        page_size = int(case.get("params", {}).get("size", case.get("size")))
+        assert len(employees) == page_size, "Unexpected employee count"
+
+    elif scenario == "search":
+        employees = response_json.get("employees")
+        assert isinstance(employees, list), "'employees' must be a list"
+
+        params = case.get("params", {})
+        expected_values = {
+            "department": params.get("department", ""),
+            "position": params.get("position", ""),
+            "salary": params.get("salary", 50000),
+        }
+
+        # Validate API vs. DB
+        validate_employees(employees, expected_values, source="API")
+        db_result = get_all_employees_search_from_db(
+            expected_values["department"],
+            expected_values["position"],
+            expected_values["salary"],
+        )
+        validate_employees(db_result, expected_values, source="DB")
 
 
 
@@ -24,91 +90,6 @@ def test_security_employee(case):
     Generic SECURITY test for Employee API with dynamic Allure labels and severity.
     """
     run_request(RequestType(case["method"]), case, feature="Security Test")
-
-# ------------------- GENERIC GET TEST WITH SEVERITY -------------------
-@pytest.mark.get
-@pytest.mark.parametrize("case", testcases_get_by_id)
-def test_get_employee_by_id(case):
-    """
-    Generic GET test for Employees API with dynamic Allure labels and severity.
-    """
-    response, case = run_request(RequestType.GET, case, feature="Get Employee By ID")
-    response_json = response.json()
-
-    # Case: Get employee by ID
-    employee_id = case.get("endpoint").split("/")[-1]
-    employee_from_db = get_employee_from_db(employee_id)
-
-    # Negative test
-    if case.get("type") == "Negative Test":
-        assert response.status_code == case.get("expected_status"), "Get Employee By ID test failed"
-        assert response_json.get("detail") == case.get("expected_detail"), "Get Employee By ID test failed"
-        return
-
-    # Positive test
-    employee = response_json.get("employee")
-    for key in ["firstName", "lastName", "email"]:
-        assert employee.get(key) == employee_from_db.get(key), f"Get Employee By ID test failed for {key}"
-
-# ------------------- GENERIC GET ALL EMPLOYEES TEST WITH SEVERITY -------------------
-@pytest.mark.getall
-@pytest.mark.parametrize("case", testcases_get_all)
-def test_get_all_employees(case):
-    """
-    Generic GET test for Employees API with dynamic Allure labels and severity.
-    """
-    response, case = run_request(RequestType.GET, case, feature="Get All Employees")
-    response_json = response.json()
-    if case.get("type") == "Negative Test":
-        assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
-        assert response_json.get("detail") == case.get("expected_detail"), "Get All Employees test failed"
-        return
-    employees = response_json.get("employees")
-    assert employees is not None, "Response should contain 'employees' key"
-    assert isinstance(employees, list), "'employees' should be a list"
-
-    page_size = int(case["params"]["size"]) if case.get("params") else case["size"]
-    assert len(employees) == page_size, "Get All Employees test failed"
-
-
-# ------------------- GENERIC GET ALL EMPLOYEES BY SEARCH TEST WITH SEVERITY -------------------
-@pytest.mark.getallsearch
-@pytest.mark.parametrize("case", testcases_get_all_search)
-def test_get_all_employees_by_search(case):
-    """
-    Generic GET test for Employees API with dynamic Allure labels and severity.
-    """
-    response, case = run_request(RequestType.GET, case, feature="Get All Employees By Search")
-    response_body = response.json()
-    if case.get("type") == "Negative Test":
-        assert response.status_code == case.get("expected_status"), "Get All Employees test failed"
-        assert response_body.get("detail") == case.get("expected_detail"), "Get All Employees test failed"
-        return
-
-
-    employees = response_body.get("employees")
-    assert employees is not None, "Response should contain 'employees' key"
-    assert isinstance(employees, list), "'employees' should be a list"
-
-    # Prepare expected values with defaults
-    params = case.get("params") or {}
-    expected_values = {
-        "department": params.get("department", ""),
-        "position": params.get("position", ""),
-        "salary": params.get("salary", 50000)
-    }
-
-    # Validate API response
-    validate_employees(employees, expected_values, source="API")
-
-    # Validate DB results
-    database_result = get_all_employees_search_from_db(
-        expected_values.get("department"),
-        expected_values.get("position"),
-        expected_values.get("salary")
-    )
-    validate_employees(database_result, expected_values, source="DB")
-
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------
@@ -160,12 +141,12 @@ def test_delete_employee(case):
     """
     Generic DELETE test for Employee API with dynamic Allure labels and severity.
     """
-    _, passed_case = run_request(RequestType.DELETE, case, feature="Delete Employee By ID")
-    print(passed_case)
-    if passed_case["type"] == "Negative Test":
+    _, case = run_request(RequestType.DELETE, case, feature="Delete Employee By ID")
+    print(case)
+    if case["type"] == "Negative Test":
         return
     with allure.step("Verify employee no longer exists in the database"):
-        employee_id = passed_case["endpoint"].split("/")[-1]
+        employee_id = extract_employee_id(case["endpoint"])
         db_result = get_employee_from_db(employee_id)
         allure.attach(str(db_result), name="DB Query Result", attachment_type=allure.attachment_type.TEXT)
         assert db_result is None, f"Employee {employee_id} still exists in DB"

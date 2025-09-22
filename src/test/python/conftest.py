@@ -9,6 +9,7 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from pathlib import Path
 import signal
+from utilities import load_json_file
 
 # --- Configuration ---
 MVN_EXEC = "mvn.cmd" if platform.system() == "Windows" else "mvn"
@@ -108,7 +109,6 @@ def spring_boot_server():
 
     # Start Spring Boot
     print("\nStarting Spring Boot server...")
-    # log_file = "springboot" + "_" + time.strftime("%Y%m%d_%H%M%S") + ".log"
     log_file = "springboot.log"
     with open(log_file, "w") as log:
         process = subprocess.Popen(SPRING_BOOT_CMD, cwd=PROJECT_ROOT, stdout=log, stderr=log)
@@ -181,6 +181,14 @@ def pytest_sessionfinish(session, exitstatus):
     # Open report
     print("Opening Allure report in browser...")
     subprocess.Popen([allure_cmd, "open", report_dir])
+
+# test_cases_security = load_json_file("testcases_security.json")
+@pytest.fixture()
+def load_security_testcases():
+    return load_json_file("testcases_security.json")
+
+
+
 
 def wait_for_server(url=BASE_URL):
     session = requests.Session()
