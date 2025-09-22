@@ -62,14 +62,14 @@ The project is organized as follows:
 │   │   │   └───com
 │   │   │       └───amblessed
 │   │   │           └───employees
-│   │   │               ├───config
-│   │   │               ├───controller
-│   │   │               ├───entity
-│   │   │               ├───exception
-│   │   │               ├───mapper
-│   │   │               ├───repository
-│   │   │               ├───security
-│   │   │               └───service
+│   │   │               ├───config/
+│   │   │               ├───controller/
+│   │   │               ├───entity/
+│   │   │               ├───exception/
+│   │   │               ├───mapper/
+│   │   │               ├───repository/
+│   │   │               ├───security/
+│   │   │               └───service/
 │   │   └───resources
 │   │       ├───db
 │   │       ├───static
@@ -80,8 +80,8 @@ The project is organized as follows:
 │       │       └───amblessed
 │       │           └───employees
 │       │               └───repository
-│       ├───python
-│       │   └───__pycache__
+│       ├───python/
+│       │   
 │       └───resources
 │           └───testcases
 ```
