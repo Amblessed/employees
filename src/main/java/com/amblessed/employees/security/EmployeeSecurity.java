@@ -32,6 +32,7 @@ public class EmployeeSecurity {
      * Returns true if the authenticated user has the ADMIN role.
      */
     public boolean isAdmin(Authentication authentication) {
+        log.info("Authorities: {}", authentication.getAuthorities());
         return hasRole(authentication, ROLE_ADMIN);
     }
 
@@ -88,7 +89,16 @@ public class EmployeeSecurity {
     }
 
     private boolean hasRole(Authentication authentication, String role) {
-        if (isNotAuthenticated(authentication)) return false;
+        if (isNotAuthenticated(authentication)){
+            return false;
+        }
+
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+        System.out.println(authentication.getAuthorities().stream().toList());
+        System.out.println(authentication.getAuthorities().stream()
+                .anyMatch(auth -> role.equals(auth.getAuthority())));
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> role.equals(auth.getAuthority()));
     }

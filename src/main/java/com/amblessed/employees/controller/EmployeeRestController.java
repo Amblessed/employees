@@ -146,7 +146,6 @@ public class EmployeeRestController {
 
     @Operation(summary = "Create employee", description = "Only admins can create new employees")
     @PostMapping
-    //@PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("@employeeSecurity.isAdmin(authentication)")
     public ResponseEntity<Map<String, Object>> createEmployee(
             @Valid @RequestBody EmployeeRequest employeeRequest
@@ -163,6 +162,7 @@ public class EmployeeRestController {
     @DeleteMapping("/id/{employeeId}")
     @PreAuthorize("@employeeSecurity.isAdmin(authentication)")
     public ResponseEntity<Map<String, Object>> deleteEmployee(@PathVariable String employeeId) {
+
         EmployeeResponse deleted = employeeService.deleteByEmployeeId(employeeId);
         Map<String, Object> response = Map.of(
                 "deleted_employee", deleted,

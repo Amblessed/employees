@@ -34,6 +34,7 @@ allure-report/
 
 src/test/resources/testcases/archive.txt
 notes.txt
+src/test/archives/
 
 
 ### NetBeans ###
@@ -54,6 +55,6 @@ build/
 Rough.*
 sample.*
 data.*
-src/test/python/rough.py
+src/test/archives/rough.py
 UserDebug**
 user_details.json

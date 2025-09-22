@@ -1,0 +1,47 @@
+[
+  {
+    "story": "Employee tries to access create employee endpoint",
+    "endpoint": "",
+    "params": {},
+    "payload": {
+      "firstName": "Peterson",
+      "lastName": "Johnson",
+      "email": "johnson@example.com"
+    },
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "type": "Negative Test",
+    "user_role": "Employee"
+  },
+  {
+    "story": "Manager tries to access create employee endpoint",
+    "endpoint": "",
+    "params": {},
+    "payload": {
+      "firstName": "Peterson",
+      "lastName": "Johnson",
+      "email": "johnson@example.com"
+    },
+    "expected_status": 403,
+    "expected_detail": "You are not authorized to access this resource.",
+    "check_field": "detail",
+    "type": "Negative Test",
+    "user_role": "Manager"
+  },
+  {
+    "story": "Admin tries to create employee with incomplete request body",
+    "endpoint": "",
+    "params": {},
+    "payload": {
+      "firstName": "Peterson",
+      "lastName": "Johnson",
+      "email": "johnson@example.com"
+    },
+    "expected_status": 400,
+    "expected_detail": "Validation failed",
+    "check_field": "detail",
+    "type": "Negative Test",
+    "user_role": "Admin"
+  }
+]

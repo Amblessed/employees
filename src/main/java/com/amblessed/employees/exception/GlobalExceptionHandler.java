@@ -140,11 +140,11 @@ public class GlobalExceptionHandler {
     public ProblemDetail createProblemDetail(Exception exception, HttpStatus status) {
         Map<String, Object> map = new HashMap<>();
         map.put("timestamp", LocalDateTime.now().toString());
-        map.put("status", status.value());
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setType(COMMON_ERROR_URI);
         problemDetail.setTitle(status.getReasonPhrase());
-        problemDetail.setDetail(exception.getMessage());
+        String detail = status == HttpStatus.FORBIDDEN ? "You are not authorized to access this resource." : "Full Authentication is required to access this resource";
+        problemDetail.setDetail(detail);
         problemDetail.setProperties(map);
         return problemDetail;
     }

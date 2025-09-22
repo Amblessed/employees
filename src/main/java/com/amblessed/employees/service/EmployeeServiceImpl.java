@@ -143,7 +143,6 @@ public class EmployeeServiceImpl implements EmployeeService{
         }
 
         Employee employee = convertToEmployee(employeeRequest);
-        //employee.setEmployeeId();
 
         // Step 2: Create system user using employeeId
         User user = new User();

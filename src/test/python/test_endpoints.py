@@ -10,6 +10,7 @@ testcases_get_all = load_json_file("get_all_employees.json")
 testcases_get_all_search = load_json_file("get_all_employees_search.json")
 test_cases_delete = load_json_file("delete_employee_by_id.json")
 test_cases_security = load_json_file("testcases_security.json")
+test_cases_create = load_json_file("create_employee.json")
 
 
 # Merge test data with scenario labels
@@ -93,16 +94,16 @@ def test_security_employee(case):
 
 
 # ------------------- GENERIC CREATE EMPLOYEE TEST WITH SEVERITY -------------------
-@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.create
-@pytest.mark.parametrize("case", test_cases.get("POST"))
+@pytest.mark.parametrize("case", test_cases_create)
 def test_create_employee(case):
     """
     Generic CREATE test for Employee API with dynamic Allure labels and severity.
     """
     count_before_request = len(get_all_employees_from_db())
 
-    run_request(RequestType.POST, case)
+    _, case = run_request(RequestType.POST, case, feature="Create Employee Test")
+
     if case["type"] == "Positive Test":
         print(f"Count before request: {count_before_request}")
         print(f"Count after request: {len(get_all_employees_from_db())}")
