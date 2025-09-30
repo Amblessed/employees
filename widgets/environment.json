@@ -1,0 +1,1 @@
+[{"values":["Linux 6.11.0-1018-azure"],"name":"OS"},{"values":["3.12.3"],"name":"Python"},{"values":["EmployeesApp"],"name":"Project"},{"values":["http://localhost:9090/api/employees/"],"name":"API_BASE_URL"}]
